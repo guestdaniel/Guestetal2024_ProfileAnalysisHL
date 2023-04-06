@@ -1,0 +1,3 @@
+[submodule "posters/aro2023"]
+	path = posters/aro2023
+	url = git@github.com:guestdaniel/ProfileAnalysis_aro2023
