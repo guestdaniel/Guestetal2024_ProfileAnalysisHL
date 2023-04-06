@@ -1,3 +1,6 @@
 [submodule "posters/aro2023"]
 	path = posters/aro2023
 	url = git@github.com:guestdaniel/ProfileAnalysis_aro2023
+[submodule "papers/Guestetal2023"]
+	path = papers/Guestetal2023
+	url = git@github.com:guestdaniel/ProfileAnalysis_Guestetal2023
