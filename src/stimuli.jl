@@ -145,7 +145,7 @@ used in the behavioral PAHI experiments.
     dur_ramp::Float64=0.01
 end
 
-function synthesize(x::ProfileAnalysisTone)
+function Utilities.synthesize(x::ProfileAnalysisTone)
     profile_analysis_tone(
         x.freqs,
         x.target_comp;

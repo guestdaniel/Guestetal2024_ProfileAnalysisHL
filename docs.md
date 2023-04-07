@@ -35,21 +35,28 @@ There are two manual steps that involve interacting with the `\\nsc-lcarney-h1` 
 2. Next, copy all files/folder from `\\nsc-lcarney-h1\C$\results\profile_analysis_iso_results` to `C:\Users\dguest2\cl_data\pahi\raw\profile_analysis_iso_results`
 
 Next we have automated steps that preprocess, clean, and compile the data.
-1. Run `scripts\internal_data\01_extract_data_mat_to_excel.m` to extract all data from the source `.mat` files to more accessible `.xlsx` files. Both `AuditoryStimulus` and `behavior_code` folders must be on the path (these folders contain various `.m` files needed to properly parse the contents of the `.mat` files containing the data).
-2. Run `scripts\internal_data\02_convert_audiograms_to_csv.m` to convert the `.mat` file containing subject info and audiograms into a `.csv` file
-3. Run `scripts\internal_data\03_compile_data.R` to compile raw block-wise data into a single tidy format.
+1. Run `workflows\behavioral_data\01_extract_data_mat_to_excel.m` to extract all data from the source `.mat` files to more accessible `.xlsx` files. Both `AuditoryStimulus` and `behavior_code` folders must be on the path (these folders contain various `.m` files needed to properly parse the contents of the `.mat` files containing the data).
+2. Run `workflows\behavioral_data\02_convert_audiograms_to_csv.m` to convert the `.mat` file containing subject info and audiograms into a `.csv` file
+3. Run `workflows\behavioral_data\03_compile_data.R` to compile raw block-wise data into a single tidy format.
 
 Next, we extract thresholds from the raw data in Julia and then analyze those thresholds in R.
-1. Run `scripts\internal_data\04_postprocess_compiled_data.jl` to add additional useful columns to the behavioral data (e.g., levels in terms of sensational level)
-2. Run `scripts\internal_data\05_extract_thresholds.jl` to fit logistic curves to behavioral data on the individual-listener level in each condition and save to resulting thresholds and slopes to disk.
-3. Run `scripts\internal_data\06_evaluate_threshold_fits.jl` to generate plots showing the correspondence between the raw proportion correct data and the fitted curves.
+1. Run `workflows\behavioral_data\04_postprocess_compiled_data.jl` to add additional useful columns to the behavioral data (e.g., levels in terms of sensational level)
+2. Run `workflows\behavioral_data\05_extract_thresholds.jl` to fit logistic curves to behavioral data on the individual-listener level in each condition and save to resulting thresholds and slopes to disk.
+3. Run `workflows\behavioral_data\06_evaluate_threshold_fits.jl` to generate plots showing the correspondence between the raw proportion correct data and the fitted curves.
 
 Finally, we analyze the fitted threshold data as well as subject data (e.g., audiograms) to generate data/analyses needed for the paper
-1. Run `scripts\internal_data\07_model_thresholds_1kHz.jl` to run the statistical model for the 1-kHz profile-analysis data
-2. Run `scripts\internal_data\08_model_thresholds_freq.R` to run the model for the remaining portion of the profile-analysis data
-3. Run `scripts\internal_data\09_calculate_subject_stats.jl` and `scripts\internal_data\10_calculate_block_stats.jl` interactively to gather data about subjects and data collection to report in methods section
+1. Run `workflows\behavioral_data\07_model_thresholds_1kHz.jl` to run the statistical model for the 1-kHz profile-analysis data
+2. Run `workflows\behavioral_data\08_model_thresholds_freq.R` to run the model for the remaining portion of the profile-analysis data
+3. Run `workflows\behavioral_data\09_calculate_subject_stats.jl` and `scripts\internal_data\10_calculate_block_stats.jl` interactively to gather data about subjects and data collection to report in methods section
 
 ## Modeling workflow
+### Parameter selection
+In the talks/posters/papers that analyze profile-analysis results, there are some IC model parameter configurations that are used in several different simulation sets.
+In order to standardize these sets and give them useful names/identities, we have a workflow that explores responses for different parameter sets in to modulated noise and profile-analysis tones.
+Based on these resposnes, we select a set of parameters that have desireable mixtures of traits to explore further in our simulations.
+The steps are as follows:
+
+1. Run `workflows\parameter_selection\01_simulate_responses.jl` to simulate responses to the tones
 
 # Modeling series
 

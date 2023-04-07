@@ -4,3 +4,6 @@
 [submodule "papers/Guestetal2023"]
 	path = papers/Guestetal2023
 	url = git@github.com:guestdaniel/ProfileAnalysis_Guestetal2023
+[submodule "talks/asa2023chicago"]
+	path = talks/asa2023chicago
+	url = git@github.com:guestdaniel/ProfileAnalysis_asa2023chicago
