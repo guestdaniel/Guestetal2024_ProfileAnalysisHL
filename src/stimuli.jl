@@ -73,7 +73,7 @@ function profile_analysis_tone(
     fs=100e3,
     dur=0.10,
     dur_ramp=0.01,
-    pedestal_level=50.0,
+    pedestal_level=70.0,
     increment=0.0,
     phase_mode="fixed"
 )
@@ -140,10 +140,11 @@ used in the behavioral PAHI experiments.
     freqs::Vector{Float64}=LogRange(center_freq * (1/5), center_freq * 5, n_comp)
     target_comp::Int64=Int(ceil(length(freqs)/2))
     increment::Float64=0.0
-    pedestal_level::Union{Float64, Uniform{Float64}}=70.0
-    pedestal_level_actual::Float64=pedestal_level isa Distribution ? rand(pedestal_level) : pedestal_level
+    pedestal_level::Float64=70.0
     dur_ramp::Float64=0.01
 end
+
+Utilities.standardfields(::Type{ProfileAnalysisTone}) = [:center_freq, :pedestal_level, :increment, :n_comp]
 
 function Utilities.synthesize(x::ProfileAnalysisTone)
     profile_analysis_tone(
@@ -152,7 +153,7 @@ function Utilities.synthesize(x::ProfileAnalysisTone)
         fs=x.fs,
         dur=x.dur,
         dur_ramp=x.dur_ramp,
-        pedestal_level=x.pedestal_level_actual,
+        pedestal_level=x.pedestal_level,
         increment=x.increment,
         phase_mode="fixed",
     )

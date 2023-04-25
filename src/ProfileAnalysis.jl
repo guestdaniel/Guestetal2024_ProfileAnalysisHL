@@ -15,12 +15,22 @@ using Random
 using Utilities
 using UtilitiesViz
 using ProgressMeter
+using Printf
 
-include("stimuli.jl")
+# General code
+include("stimuli.jl")            # stimulus code
 include("utils.jl")              # random useful functions
 include("figures.jl")            # code for figures
-#include("parameter_sets.jl")
-#include(joinpath("experiments", "EvaluateParameters.jl"))  # exp to test IC model params
+include("parallel.jl")           # stimulus code
+
+# Experiment-specific code
+include(joinpath("experiments", "EvaluateParameters.jl"))  # exp to test IC model params
+include(joinpath("experiments", "parameter_sets.jl"))
+include(joinpath("experiments", "StandardNeurograms.jl"))  # exp to make generating standard nuerograms easy!
+
+# Talk-specific code
+include(joinpath("..\\talks", "asa2023chicago", "experiments", "RovingTemplates.jl"))
+#include(joinpath("..\\talks", "asa2023chicago", "experiments", "RovingDifferenceTemplates.jl"))
 
 # Constants
 const C_path_models = "C:\\home\\daniel\\cl_sim\\pahi"
