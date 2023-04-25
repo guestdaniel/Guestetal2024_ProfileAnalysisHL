@@ -29,7 +29,7 @@ include(joinpath("experiments", "parameter_sets.jl"))
 include(joinpath("experiments", "StandardNeurograms.jl"))  # exp to make generating standard nuerograms easy!
 
 # Talk-specific code
-include(joinpath("..\\talks", "asa2023chicago", "experiments", "RovingTemplates.jl"))
+include(joinpath(splitdir(Base.active_project())[1], "talks", "asa2023chicago", "experiments", "RovingTemplates.jl"))
 #include(joinpath("..\\talks", "asa2023chicago", "experiments", "RovingDifferenceTemplates.jl"))
 
 # Constants
