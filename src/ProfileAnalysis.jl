@@ -5,6 +5,7 @@ using AuditorySignalUtils
 using CairoMakie
 using Chain
 using Colors
+using ColorSchemes
 using DataFrames
 using Distributed
 using Distributions
@@ -29,8 +30,8 @@ include(joinpath("experiments", "parameter_sets.jl"))
 include(joinpath("experiments", "StandardNeurograms.jl"))  # exp to make generating standard nuerograms easy!
 
 # Talk-specific code
-include(joinpath("..\\talks", "asa2023chicago", "experiments", "RovingTemplates.jl"))
-#include(joinpath("..\\talks", "asa2023chicago", "experiments", "RovingDifferenceTemplates.jl"))
+include(joinpath("..\\talks", "asa2023chicago", "src", "experiments", "RovingTemplates", "RovingTemplates.jl"))
+include(joinpath("..\\talks", "asa2023chicago", "src", "experiments", "RovingTemplates", "RovingTemplates_plot.jl"))
 
 # Constants
 const C_path_models = "C:\\home\\daniel\\cl_sim\\pahi"
