@@ -63,7 +63,7 @@ function Utilities.setup(
     stimulus = ProfileAnalysisTone(; center_freq=center_freq, n_comp=21, increment=increment)
     model = M(;
         frontend=AuditoryNerveZBC2014(;
-            cf=LogRange(center_freq/3, center_freq*3, 60),
+            cf=LogRange(center_freq/3, center_freq*3, 120),
             fractional=false,
         ),
         param...
@@ -81,7 +81,7 @@ function Utilities.setup(
 ) 
     stimulus = ProfileAnalysisTone(; center_freq=center_freq, n_comp=21, increment=increment)
     model = AuditoryNerveZBC2014(;
-        cf=LogRange(center_freq/3, center_freq*3, 60),
+        cf=LogRange(center_freq/3, center_freq*3, 120),
         fractional=false,
         param...
     )
