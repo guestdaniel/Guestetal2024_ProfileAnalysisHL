@@ -17,7 +17,7 @@ now=$(date +"%T")
 echo "Start time : $now"
 
 # Run script
-cd ~/cl_code/ProfileAnalysis/experiments/Templates
+cd ~/cl_code/ProfileAnalysis/src/experiments/Templates
 julia -p 30 Templates_run.jl
 
 # Print current time
