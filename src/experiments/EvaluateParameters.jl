@@ -14,7 +14,7 @@ here for convenience:
     `viz(::T, param::Dict)` generates main experiment plot for IC model parameters in 
         `param` for subtype of InferiorColliculusSFIE T
 """
-struct EvaluateParameters{T} <: Utilities.ComplexExperiment where {T <: InferiorColliculusSFIE} end
+struct EvaluateParameters{T} <: Utilities.Experiment where {T <: InferiorColliculusSFIE} end
 
 function Utilities.getcontext(::EvaluateParameters; kwargs...)
     Context(; 
