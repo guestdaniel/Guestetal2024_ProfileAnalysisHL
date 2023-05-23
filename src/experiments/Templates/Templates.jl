@@ -5,7 +5,7 @@ export ProfileAnalysis_Templates
 const n_cf = 91                # number of CFs to simulate (#)
 const n_rep = 200              # number of trials to simulate (#)
 const fs = 100e3               # sampling rate (Hz)
-const cf_range = [1/2.0, 2.0]  # range around center frequency (oct)
+const cf_range = [1/2.0, 2.0]  # range around center frequency (ratio)
 const fractional = true        # include fractional Gaussian noise (bool)
 
 # Declare experiment types
@@ -46,7 +46,7 @@ function Utilities.setup(::ProfileAnalysis_Templates, model::Model, center_freq:
     )
 
     # Bundle with stimuli with model in ExcitationPatternDetailed
-    ExcitationPatternDetailed(; stimuli=stim, model=model)
+    AvgPattern(; stimuli=stim, model=model)
 end
 
 # Declare setup function to get all available models given center frequency
