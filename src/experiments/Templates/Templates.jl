@@ -3,7 +3,7 @@ export ProfileAnalysis_Templates
 
 # Declare a handful of constants that we will use throughout these experiments and analyses
 const n_cf = 91                # number of CFs to simulate (#)
-const n_rep = 200              # number of trials to simulate (#)
+const n_rep = 500              # number of trials to simulate (#)
 const fs = 100e3               # sampling rate (Hz)
 const cf_range = [1/2.0, 2.0]  # range around center frequency (ratio)
 const fractional = true        # include fractional Gaussian noise (bool)
@@ -18,7 +18,7 @@ function Utilities.setup(experiment::ProfileAnalysis_Templates)
 
     # Choose increments, frequencies, and component counts to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
-    n_comps = [5, 13, 21, 29, 37]
+    n_comps = [5, 9, 13, 17, 21, 25, 29, 33, 37]
 
     # Loop through and add simulations of interest
     sims = map(Iterators.product(center_freqs, n_comps)) do (center_freq, n_comp)
