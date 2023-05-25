@@ -13,7 +13,7 @@ abstract type ProfileAnalysisExperiment <: Utilities.Experiment end
 # and maximize simulation reuse
 const n_cf = 91                # number of CFs to simulate (#)
 const n_rep_template = 500     # number of ref responses to simulate for template (#)
-const n_rep_trial    = 25      # number of trials to simulate for each point on PF (#)
+const n_rep_trial    = 150     # number of trials to simulate for each point on PF (#)
 const fs = 100e3               # sampling rate (Hz)
 const cf_range = [1/2.0, 2.0]  # range around center tone frequency (ratio)
 const fractional = true        # include fractional Gaussian noise (bool)
