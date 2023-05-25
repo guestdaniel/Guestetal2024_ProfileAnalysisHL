@@ -27,8 +27,10 @@ include("parallel.jl")           # stimulus code
 # Experiment-specific code
 #include(joinpath("experiments", "EvaluateParameters.jl"))  # exp to test IC model params
 include(joinpath("experiments", "parameter_sets.jl"))
+include(joinpath("experiments", "experiments.jl"))
 include(joinpath("experiments", "Templates", "Templates.jl"))
-#include(joinpath("experiments", "StandardNeurograms.jl"))  # exp to make generating standard nuerograms easy!
+include(joinpath("experiments", "PFs", "PFs.jl"))
+include(joinpath("experiments", "genfigs.jl"))
 
 # Talk-specific code
 #include(joinpath(splitdir(Base.active_project())[1], "talks", "asa2023chicago", "src", "experiments", "RovingTemplates", "RovingTemplates.jl"))
