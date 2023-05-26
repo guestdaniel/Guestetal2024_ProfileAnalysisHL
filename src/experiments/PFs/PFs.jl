@@ -104,12 +104,12 @@ end
 
 # Declare functions used by PFs above (e.g., observer rules, preprocessing rules)
 function obs_inc_rate_at_tf(x1::Vector, x2::Vector)
-    idx = Int(round(length(v1)/2))
+    idx = Int(round(length(x1)/2))
     x2[idx] > x1[idx] ? 2 : 1
 end
 
 function obs_dec_rate_at_tf(x1::Vector, x2::Vector)
-    idx = Int(round(length(v1)/2))
+    idx = Int(round(length(x1)/2))
     x2[idx] < x1[idx] ? 2 : 1
 end
 
