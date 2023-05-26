@@ -29,6 +29,7 @@ include("parallel.jl")           # stimulus code
 include(joinpath("experiments", "parameter_sets.jl"))
 include(joinpath("experiments", "experiments.jl"))
 include(joinpath("experiments", "Templates", "Templates.jl"))
+include(joinpath("experiments", "AvgPatterns", "AvgPatterns.jl"))
 include(joinpath("experiments", "PFs", "PFs.jl"))
 include(joinpath("experiments", "genfigs.jl"))
 

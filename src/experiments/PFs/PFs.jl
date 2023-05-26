@@ -10,6 +10,29 @@ abstract type ProfileAnalysis_PF <: ProfileAnalysisExperiment end
 struct ProfileAnalysis_PFTemplateObserver <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFObserver <: ProfileAnalysis_PF end
 
+# Declare setup function to set up entire experiment for batch run
+function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
+    # Set parameters that we're going to range over 
+    center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
+    n_comps = [5, 9, 13, 17, 21, 25, 29, 33, 37]
+
+    # Configure other values
+    increments=vcat(-999.9, -45.0:2.5:5.0)
+
+    # Get simulations
+    sims = map(Iterators.product(center_freqs, n_comps)) do (center_freq, n_comp)
+        # Get possible models
+        models = Utilities.setup(experiment, center_freq)
+
+        # Loop over models and assemble PFs
+        map(models) do model
+            Utilities.setup(experiment, model, increments, center_freq, n_comp)
+        end
+    end
+
+    vcat(sims...)
+end
+
 # Declare setup function to return PF for combination of model, increments, center_freq, and n_comp
 function Utilities.setup(
     ::ProfileAnalysis_PFTemplateObserver, 
@@ -134,7 +157,7 @@ function Utilities.viz!(::ProfileAnalysis_PF, ax, x, μ, σ, mod)
     errorbars!(ax, x, μ, 1.96 .* σ; color=:black)
 
     # Plot interpolated curve fit
-    x̂ = -30.0:0.1:20.0
+    x̂ = -40.0:0.1:10.0
     lines!(ax, x̂, logistic_predict(x̂, (mod.param)...))
 
     # Add threshold text
