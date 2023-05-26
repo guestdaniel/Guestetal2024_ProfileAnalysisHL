@@ -32,6 +32,10 @@ function genfig_zeta_c1_psychometric_functions(increments=vcat(-Inf, -30.0:5.0:5
     end
 
     # Neaten up
+    axs[1].ylabel = "Proportion correct"
+    Label(fig[2, 2:3], "Increment (dB SRS)"; tellwidth=false)
+    rowgap!(fig.layout, 1, Relative(0.03))
+    colgap!(fig.layout, Relative(0.02))
     neaten_grid!(axs)
 
     # Return
@@ -76,6 +80,10 @@ function genfig_zeta_c2_psychometric_functions(increments=vcat(-Inf, -30.0:5.0:5
     end
 
     # Neaten up
+    axs[1].ylabel = "Proportion correct"
+    Label(fig[2, 2:3], "Increment (dB SRS)"; tellwidth=false)
+    rowgap!(fig.layout, 1, Relative(0.03))
+    colgap!(fig.layout, Relative(0.02))
     neaten_grid!(axs)
 
     # Return
@@ -117,6 +125,10 @@ function genfig_zeta_c3_psychometric_functions(increments=vcat(-Inf, -30.0:5.0:5
     end
 
     # Neaten up
+    axs[1].ylabel = "Proportion correct"
+    Label(fig[2, 2:3], "Increment (dB SRS)"; tellwidth=false)
+    rowgap!(fig.layout, 1, Relative(0.03))
+    colgap!(fig.layout, Relative(0.02))
     neaten_grid!(axs)
 
     # Return

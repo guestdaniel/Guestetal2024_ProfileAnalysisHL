@@ -2,7 +2,8 @@
 # subtype for generating psychometric function objects for profile-analysis experiments
 
 # Handle exports
-export ProfileAnalysis_PF, ProfileAnalysis_PFTemplateObserver, ProfileAnalysis_PFObserver
+export ProfileAnalysis_PF, ProfileAnalysis_PFTemplateObserver, ProfileAnalysis_PFObserver,
+       obs_dec_rate_at_tf, obs_inc_rate_at_tf, pre_emphasize_profile
 
 # Declare experiment types
 abstract type ProfileAnalysis_PF <: ProfileAnalysisExperiment end
@@ -146,4 +147,5 @@ function Utilities.viz!(::ProfileAnalysis_PF, ax, x, μ, σ, mod)
     # Set limits and such
     xlims!(ax, -40.0, 10.0)
     ylims!(ax, 0.40, 1.15)
+
 end
