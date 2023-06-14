@@ -14,6 +14,12 @@ These are available in tidy format in a `.csv` file at `data\ext_pro\paper_fig.c
 These files have the following columns:
 
 ## Computational/modeling data
+```
+.  
+├── src                      # All "source" (i.e., non-script) code
+│   ├── experiments          # source files for particular analyses/simulations
+│   └── ...                  # primary source files  
+```
 
 ## 2023 paper stuff
 For the 2023 paper, the structure is something like this:

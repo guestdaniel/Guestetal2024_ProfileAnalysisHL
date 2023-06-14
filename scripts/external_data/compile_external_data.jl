@@ -11,28 +11,22 @@ using DataFrames
 #  .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.
 # / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \
 #`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `
-### Set wd
-cd("/home/daniel/cl_code/pahi")
-
-#  .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.
-# / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \
-#`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `-`-'   `
 ### Compile experiments
 # External
 main = DataFrame()
-green1983a_fig2 = DataFrame(CSV.File("data/ext_pro/Green1983a_Fig2.csv"))
+green1983a_fig2 = DataFrame(CSV.File(datadir("ext_pro", "Green1983a_Fig2.csv")))
 green1983a_fig2[!, :experiment] .= "Green and Kidd (1983), Figure 2"
-green1983b_fig4 = DataFrame(CSV.File("data/ext_pro/Green1983b_Fig4.csv"))
+green1983b_fig4 = DataFrame(CSV.File(datadir("ext_pro", "Green1983b_Fig4.csv")))
 green1983b_fig4[!, :experiment] .= "Green, Kidd, and Picardi (1983), Figure 4"
-green1985_fig1 = DataFrame(CSV.File("data/ext_pro/Green1985_Fig1.csv"))
+green1985_fig1 = DataFrame(CSV.File(datadir("ext_pro", "Green1985_Fig1.csv")))
 green1985_fig1[!, :experiment] .= "Green and Mason (1985), Figure 1"
-green1985_fig2 = DataFrame(CSV.File("data/ext_pro/Green1985_Fig2.csv"))
+green1985_fig2 = DataFrame(CSV.File(datadir("ext_pro", "Green1985_Fig2.csv")))
 green1985_fig2[!, :experiment] .= "Green and Mason (1985), Figure 2"
-green1985_fig3 = DataFrame(CSV.File("data/ext_pro/Green1985_Fig3.csv"))
+green1985_fig3 = DataFrame(CSV.File(datadir("ext_pro", "Green1985_Fig3.csv")))
 green1985_fig3[!, :experiment] .= "Green and Mason (1985), Figure 3"
-bernstein1987_fig2 = DataFrame(CSV.File("data/ext_pro/Bernstein1987_Fig2.csv"))
+bernstein1987_fig2 = DataFrame(CSV.File(datadir("ext_pro", "Bernstein1987_Fig2.csv")))
 bernstein1987_fig2[!, :experiment] .= "Bernstein and Green (1987), Figure 2"
-lentz1999_fig2 = DataFrame(CSV.File("data/ext_pro/Lentz1999_Fig2.csv"))
+lentz1999_fig2 = DataFrame(CSV.File(datadir("ext_pro", "Lentz1999_Fig2.csv")))
 lentz1999_fig2[!, :experiment] .= "Lentz, Richards, and Matiasek (1999), Figure 2"
 
 main = vcat(main, green1983a_fig2; cols=:union)
@@ -43,25 +37,6 @@ main = vcat(main, green1985_fig3; cols=:union)
 main = vcat(main, bernstein1987_fig2; cols=:union)
 main = vcat(main, lentz1999_fig2; cols=:union)
 main[!, :external] .= true
-
-# Internal
-internal = DataFrame()
-guest2023 = DataFrame(CSV.File("data/ext_pro/pahi_estimated_thresholds.csv"))
-guest2023[!, :experiment] .= "PAHI-1"
-#renamer = Dict(
-#    1 => "Best",
-#    2 => "Middle",
-#    3 => "Worst",
-#)
-#guest2023[!, :hearing_status] .= [renamer[x] for x in guest2023.hearing_status]
-guest2023[!, :f_low] .= guest2023.freq .* 1/5
-guest2023[!, :f_high] .= guest2023.freq .* 5
-
-internal = vcat(internal, guest2023; cols=:union)
-internal[!, :external] .= false
-
-# Combine
-main = vcat(main, internal; cols=:union)
 
 #  .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.   .-.-.
 # / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \ \ / / \

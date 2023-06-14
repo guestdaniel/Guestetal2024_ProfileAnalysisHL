@@ -5,10 +5,13 @@ using AuditorySignalUtils
 using CairoMakie
 using Chain
 using Colors
+using CSV
 using ColorSchemes
 using DataFrames
+using DataFramesMeta
 using Distributed
 using Distributions
+using DrWatson
 using LsqFit
 using Parameters
 using Statistics
@@ -17,6 +20,8 @@ using Utilities
 using UtilitiesViz
 using ProgressMeter
 using Printf
+using Match
+using Optim
 
 # General code
 include("stimuli.jl")            # stimulus code
@@ -31,11 +36,9 @@ include(joinpath("experiments", "experiments.jl"))
 include(joinpath("experiments", "Templates", "Templates.jl"))
 include(joinpath("experiments", "AvgPatterns", "AvgPatterns.jl"))
 include(joinpath("experiments", "PFs", "PFs.jl"))
-include(joinpath("experiments", "genfigs.jl"))
 
-# Talk-specific code
-#include(joinpath(splitdir(Base.active_project())[1], "talks", "asa2023chicago", "src", "experiments", "RovingTemplates", "RovingTemplates.jl"))
-#include(joinpath(splitdir(Base.active_project())[1], "talks", "asa2023chicago", "src", "experiments", "RovingTemplates", "RovingTemplates_plot.jl"))
+# Figure code
+include("genfigs.jl")
 
 # Constants
 const C_path_models = "C:\\home\\daniel\\cl_sim\\pahi"

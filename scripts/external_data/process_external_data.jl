@@ -8,14 +8,11 @@
 using CSV
 using DataFrames
 
-### Set wd
-cd("/home/daniel/cl_code/pahi")
-
 ### Preprocess Green (1983a), Figure 4
 df = map([2, 4, 10, 20]) do n_comp
     # Read in data
     file = "Green1983a_Fig2_$(n_comp).csv"
-    path = joinpath("data/ext_raw", file)
+    path = datadir("ext_raw", file)
     df = DataFrame(CSV.File(path; header=0))
 
     # Add labels
@@ -33,13 +30,13 @@ end
 df = vcat(df...)
 
 # Save clean versio n
-CSV.write("data/ext_pro/Green1983a_Fig2.csv", df)
+CSV.write(datadir("ext_pro", "Green1983a_Fig2.csv"), df)
 
 ### Preprocess Green (1983b), Figure 4
 df = map([3, 5, 11, 21]) do n_comp
     # Read in data
     file = "Green1983b_Fig4_$(n_comp).csv"
-    path = joinpath("data/ext_raw", file)
+    path = datadir("ext_raw", file)
     df = DataFrame(CSV.File(path; header=0))
 
     # Add labels
@@ -57,12 +54,12 @@ end
 df = vcat(df...)
 
 # Save clean version
-CSV.write("data/ext_pro/Green1983b_Fig4.csv", df)
+CSV.write(datadir("ext_pro", "Green1983b_Fig4.csv"), df)
 
 ### Preprocess Green (1985), Figure 1
 # Read in data
 file = "Green1985_Fig1.csv"
-path = joinpath("data/ext_raw", file)
+path = datadir("ext_raw", file)
 df = DataFrame(CSV.File(path; header=0))
 
 # Add labels
@@ -76,7 +73,7 @@ df[!, "f_low"] .= 200.0
 df[!, "f_high"] .= 5000.0
 
 # Save clean version
-CSV.write("data/ext_pro/Green1985_Fig1.csv", df)
+CSV.write(datadir("ext_pro", "Green1985_Fig1.csv"), df)
 
 ### Preprocess Green (1985), Figure 2
 # Read in data
@@ -95,12 +92,12 @@ df[!, "f_low"] .= df.freq .* (1/1.1746) .* (1/1.1746)
 df[!, "f_high"] .= df.freq .* 1.1746 .* 1.1746
 
 # Save clean version
-CSV.write("data/ext_pro/Green1985_Fig2.csv", df)
+CSV.write(datadir("ext_pro", "Green1985_Fig2.csv"), df)
 
 ### Preprocess Green (1985), Figure 3
 # Read in data
 file = "Green1985_Fig3.csv"
-path = joinpath("data/ext_raw", file)
+path = datadir("ext_raw", file)
 df = DataFrame(CSV.File(path; header=0))
 
 # Add labels
@@ -115,13 +112,13 @@ df[!, "level"] .= 45.0
 df[!, "rove_range"] .= 40.0
 
 # Save clean version
-CSV.write("data/ext_pro/Green1985_Fig3.csv", df)
+CSV.write(datadir("ext_pro", "Green1985_Fig3.csv"), df)
 
 ### Preprocess Bernstein (1987), Figure 2
 df = map([380, 1000, 2626]) do freq
     # Read in data
     file = "Bernstein1987_Fig2_$freq.csv"
-    path = joinpath("data/ext_raw", file)
+    path = datadir("ext_raw", file)
     df = DataFrame(CSV.File(path; header=0))
 
     # Add labels
@@ -139,12 +136,12 @@ end
 df = vcat(df...)
 
 # Save clean version
-CSV.write("data/ext_pro/Bernstein1987_Fig2.csv", df)
+CSV.write(datadir("ext_pro", "Bernstein1987_Fig2.csv"), df)
 
 ### Preprocess Lentz (1999), Figure 2
 # Read in data
 file = "Lentz1999_Fig2.csv"
-path = joinpath("data/ext_raw", file)
+path = datadir("ext_raw", file)
 df = DataFrame(CSV.File(path; header=0))
 
 # Add labels
@@ -159,20 +156,4 @@ df[!, "level"] .= 55.0
 df[!, "rove_range"] .= 20.0 # check this value
 
 # Save clean version
-CSV.write("data/ext_pro/Lentz1999_Fig2.csv", df)
-
-### Preprocess PAHI-1
-# Read in data
-file = "pahi_group_avg_thresholds.csv"
-path = "/home/daniel/cl_data/pahi/clean/$file"
-df = DataFrame(CSV.File(path))
-df = df[:, 2:(end-1)]
-
-# Add additional data
-df[!, "f_low"] .= df.freq .* 2 .^ (-1)
-df[!, "f_high"] .= df.freq .* 2 .^ (1)
-df[!, "level"] .= 70.0
-df[!, "rove_range"] .= ifelse.(df.rove .== "unroved", 0.0, 20.0)
-
-# Save clean version
-CSV.write("data/ext_pro/pahi-1.csv", df)
+CSV.write(datadir("ext_pro", "Lentz1999_Fig2.csv"), df)

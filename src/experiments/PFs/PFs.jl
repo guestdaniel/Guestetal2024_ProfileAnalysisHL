@@ -152,19 +152,19 @@ function Utilities.viz!(::ProfileAnalysis_PF, ax, x, μ, σ, mod)
     # Add vline and label indicating position of threshold
     vlines!(ax, [threshold]; color=:red)
 
+    # Plot interpolated curve fit
+    x̂ = -40.0:0.1:10.0
+    lines!(ax, x̂, logistic_predict(x̂, (mod.param)...); color=:gray)
+
     # Plot data with errorbars
     scatter!(ax, x, μ; color=:black)
     errorbars!(ax, x, μ, 1.96 .* σ; color=:black)
 
-    # Plot interpolated curve fit
-    x̂ = -40.0:0.1:10.0
-    lines!(ax, x̂, logistic_predict(x̂, (mod.param)...))
-
     # Add threshold text
     if threshold < -15.0
-        text!(ax, [threshold + 2.0], [1.03]; text=string(round(threshold)), color=:red, align=(:left, :bottom))
+        text!(ax, [threshold + 2.0], [1.03]; text=string(Int(round(threshold))), color=:red, align=(:left, :bottom))
     else
-        text!(ax, [threshold - 2.0], [1.03]; text=string(round(threshold)), color=:red, align=(:right, :bottom))
+        text!(ax, [threshold - 2.0], [1.03]; text=string(Int(round(threshold))), color=:red, align=(:right, :bottom))
     end
 
     # Set limits and such
