@@ -3,7 +3,7 @@
 
 # Handle exports
 export ProfileAnalysis_PF, ProfileAnalysis_PFTemplateObserver, ProfileAnalysis_PFObserver,
-       obs_dec_rate_at_tf, obs_inc_rate_at_tf, pre_emphasize_profile
+       obs_dec_rate_at_tf, obs_inc_rate_at_tf, pre_emphasize_profile, getpffunc
 
 # Declare experiment types
 abstract type ProfileAnalysis_PF <: ProfileAnalysisExperiment end
@@ -172,3 +172,17 @@ function Utilities.viz!(::ProfileAnalysis_PF, ax, x, μ, σ, mod)
     ylims!(ax, 0.40, 1.15)
 
 end
+
+function getpffunc(mode, model, exp)
+    if mode == "singlechannel"
+        obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
+        pffunc = (args...) -> Utilities.setup(exp, args...; observer=obs)
+    elseif mode == "profilechannel"
+        obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
+        pffunc = (args...) -> Utilities.setup(exp, args...; observer=obs, preprocessor=pre_emphasize_profile)
+    elseif mode == "templatebased"
+        pffunc = (args...) -> Utilities.setup(exp, args...)
+    end
+    return pffunc
+end
+

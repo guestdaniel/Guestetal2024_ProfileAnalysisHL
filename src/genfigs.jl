@@ -332,9 +332,6 @@ end
 # - theta_get_behavioral_data: utility function to grab behavioral data
 # - theta_get_external_data: utility function to grab *external* behavioral data
 # - theta_plot!: mutating function to plot bowls
-# - getpffunc: utility factory function to get correct PF object
-# - modelstr: utility function to get model string with spont rate information from 
-#   model objects
 # - genfig_theta_bowls(mode): generate one bowl figure for modeled PFs of the requested 
 #   mode, where mode ∈ ["singlechannel", "profilechannel", "templatebased"]. Used for
 #   supplemental figures, where we show all results.
@@ -429,27 +426,6 @@ function theta_plot!(ax, n_comps, θ, beh, ext, center_freq; color=:black, marke
     # Plot
     lines!(ax, n_comps, θ; color=color)
     scatter!(ax, n_comps, θ; color=color, marker=marker)
-end
-
-function getpffunc(mode, model, exp)
-    if mode == "singlechannel"
-        obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-        pffunc = (args...) -> Utilities.setup(exp, args...; observer=obs)
-    elseif mode == "profilechannel"
-        obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-        pffunc = (args...) -> Utilities.setup(exp, args...; observer=obs, preprocessor=pre_emphasize_profile)
-    elseif mode == "templatebased"
-        pffunc = (args...) -> Utilities.setup(exp, args...)
-    end
-    return pffunc
-end
-
-function modelstr(model::Model)
-    if typeof(model) == AuditoryNerveZBC2014
-        string(typeof(model)) * "_" * model.fiber_type
-    else
-        string(typeof(model))
-    end
 end
 
 function find_constant(beh, sim)
@@ -1000,4 +976,39 @@ function genfig_theta_freq_bowls_summary_free(
 
     # Return
     return fig
+end
+
+function genfig_theta_summary()
+    # Get model results and summarize
+    results = @chain compare_behavior_to_simulations() begin
+        groupby([:model, :mode, :adjusted])
+        @combine(:rms = mean(:rms), :varexp = mean(:varexp))
+        @orderby(:adjusted, :model)
+    end
+
+    # Set up fig and axes
+    fig = Figure()
+    axs = [Axis(fig[i, j]) for i in 1:2, j in 1:3]
+    ylims!.(axs, 0.0, 20.0)
+
+    # Axis labels/orders are entirely predicated on sorting assumptions (BAD)
+    # Also should probably pair different models iwthin each coding strategy
+
+    # Map through adjusted and unadjusted 
+    map(zip(
+        groupby(results, :adjusted), 
+        ["Raw", "Adjusted"],
+        eachrow(axs) 
+    )) do (grp, label, ax_row)
+        # Map through each coding strategy
+        map(zip(["singlechannel", "profilechannel", "templatebased"], ax_row)) do (mode, ax)
+            # Subset, plot, and sort data
+            temp = @subset(grp, :mode .== mode)
+            temp = @orderby(temp, :model)
+            barplot!(ax, temp.rms)
+            ax.xticks = (1:3, unique(temp.model))
+            ax.xticklabelrotation = π/2
+        end
+    end
+    fig
 end

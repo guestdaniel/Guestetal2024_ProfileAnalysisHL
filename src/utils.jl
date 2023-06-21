@@ -1,5 +1,6 @@
 export logistic, logistic_fit, logistic_predict, hearing_group, hl_offsets,
-    hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function
+    hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function, modelstr,
+    variance_explained, get_hl_colors, color_group
 
 """
     logistic(x, λ; L, offset)
@@ -91,4 +92,44 @@ end
 #total_to_comp(x, n) = 20 * log10(10^(x/20)/n)
 total_to_comp(x, n) = 10 * log10(10^(x/10)/n)
 
+# Define function that maps from model objects to convenient name strings
+function modelstr(model::Model)
+    if typeof(model) == AuditoryNerveZBC2014
+        string(typeof(model)) * "_" * model.fiber_type
+    else
+        string(typeof(model))
+    end
+end
 
+# Define function to compute variance explained
+function variance_explained(y, ŷ)
+    var_total = sum((y .- mean(y)).^2)
+    var_resid = sum((ŷ .- y).^2)
+    return 1 - var_resid/var_total
+end
+
+# Function to return current values for HL-group colors
+function get_hl_colors()
+    [
+        HSL(120, 0.51, 0.58), 
+        HSL(265, 0.45, 0.63), 
+        HSL(29, 0.97, 0.63), 
+    ]
+end
+
+# Function to map from integer [1, 2, 3] to corresponding group color
+function color_group(group::Int) 
+    get_hl_colors()[group]
+end
+
+# Function to map from group name to corresponding group color
+function color_group(group::String) 
+    hl_colors = get_hl_colors()
+    if group == "< 5 dB HL"
+        hl_colors[1]
+    elseif group == "5-15 dB HL"
+        hl_colors[2]
+    else
+        hl_colors[3]
+    end
+end

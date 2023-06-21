@@ -26,16 +26,15 @@ using Optim
 # General code
 include("stimuli.jl")            # stimulus code
 include("utils.jl")              # random useful functions
-include("figures.jl")            # code for figures
 include("parallel.jl")           # stimulus code
 
 # Experiment-specific code
-#include(joinpath("experiments", "EvaluateParameters.jl"))  # exp to test IC model params
 include(joinpath("experiments", "parameter_sets.jl"))
 include(joinpath("experiments", "experiments.jl"))
 include(joinpath("experiments", "Templates", "Templates.jl"))
 include(joinpath("experiments", "AvgPatterns", "AvgPatterns.jl"))
 include(joinpath("experiments", "PFs", "PFs.jl"))
+include(joinpath("experiments", "PFs", "PFs_postprocess.jl"))
 
 # Figure code
 include("genfigs.jl")
