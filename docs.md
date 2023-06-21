@@ -13,21 +13,25 @@ Some processed *external* data are also available (from other studies of profile
 These are available in tidy format in a `.csv` file at `data\ext_pro\paper_fig.csv`, where paper is in `[Green1985, Bernstein1987, Lentz1999]` and figure is in `[Fig2, Fig3, Fig4]`. 
 These files have the following columns:
 
-## Computational/modeling data
+## Path structure
 ```
 .  
-├── src                      # All "source" (i.e., non-script) code
-│   ├── experiments          # source files for particular analyses/simulations
-│   └── ...                  # primary source files  
-```
-
-## 2023 paper stuff
-For the 2023 paper, the structure is something like this:
-```
-.  
-├── figures                  # Code to generate figures
-├── simulations              # Code to generate simulations 
-└── README.md                # This README file
+├── data                     # Behavioral data (internal and external) lives here
+├── scripts                  # [[TODO --- deprecate]] 
+├── plots                    # Intermediate figure files and master figure .svg files
+├── src                      # Primary "source" directory
+│   ├── experiments          # Fundamental modeling code for various simulated experiments
+│   ├── figures              # Code for compiling simulated results into figures
+├── test                     # Contains some scripts for sanity checking code in this repository
+├── workflows                # Folder containing various "workflows" (sequences of scripts)
+│   ├── behavioral_data      # Workflow for collecting, cleaning, compiling behavioral data
+│   ├── simulations          # Workflow for running simulated experiments
+│   └── figures              # Workflow for generating paper figures
+├── docs.md                  # Documentation file for the entire repository
+├── cfg.R                    # [[TODO --- deprecate]] Short script to provide constants/configs shared across all R files
+├── LICENSE                  # License file for the code contained in this repository
+├── LICENSE_data             # [[TODO --- add]] License file for the behavioral data contained in this repository
+└── Project.toml             # Julia environment management file
 ```
 
 # Workflows

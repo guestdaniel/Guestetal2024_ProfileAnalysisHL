@@ -89,7 +89,6 @@ function spl_to_hl(spl, freq)
 end
 
 # Define function that maps from overall level to level-per-component
-#total_to_comp(x, n) = 20 * log10(10^(x/20)/n)
 total_to_comp(x, n) = 10 * log10(10^(x/10)/n)
 
 # Define function that maps from model objects to convenient name strings
