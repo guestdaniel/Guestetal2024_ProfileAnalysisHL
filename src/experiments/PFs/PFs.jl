@@ -12,21 +12,22 @@ struct ProfileAnalysis_PFObserver <: ProfileAnalysis_PF end
 
 # Declare setup function to set up entire experiment for batch run
 function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
-    # Set parameters that we're going to range over 
+    # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
     n_comps = [5, 9, 13, 17, 21, 25, 29, 33, 37]
+    rove_sizes = [0.001, 10.0]
 
     # Configure other values
     increments=vcat(-999.9, -45.0:2.5:5.0)
 
     # Get simulations
-    sims = map(Iterators.product(center_freqs, n_comps)) do (center_freq, n_comp)
+    sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
         # Get possible models
         models = Utilities.setup(experiment, center_freq)
 
         # Loop over models and assemble PFs
         map(models) do model
-            Utilities.setup(experiment, model, increments, center_freq, n_comp)
+            Utilities.setup(experiment, model, increments, center_freq, n_comp, rove_size)
         end
     end
 
@@ -39,28 +40,33 @@ function Utilities.setup(
     model::Model, 
     increments=[-20.0, -10.0, 0.0], 
     center_freq::Float64=1000.0, 
-    n_comp::Int64=21
+    n_comp::Int64=21,
+    rove_size::Float64=0.001,
 )
     # Get template
-    template = Utilities.setup(ProfileAnalysis_Templates(), model, center_freq, n_comp)
+    template = Utilities.setup(ProfileAnalysis_Templates(), model, center_freq, n_comp, rove_size)
 
     # Make stimuli and bind with model into vector of DeltaPatterns
     patterns = map(increments) do increment
         # Make stimuli
         stim_ref = RovedStimulus(
-            ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, increment=-Inf), 
+            ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, pedestal_level=70.0, increment=-Inf), 
             n_rep_trial; 
             rove_params=[:pedestal_level], 
-            rove_dist=Uniform(60.0, 80.0)
+            rove_dist=Uniform(70.0 - rove_size, 70.0 + rove_size)
         )
         stim_tar = RovedStimulus(
-            ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, increment=increment), 
+            ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, pedestal_level=70.0, increment=increment), 
             n_rep_trial; 
             rove_params=[:pedestal_level], 
-            rove_dist=Uniform(60.0, 80.0)
+            rove_dist=Uniform(70.0 - rove_size, 70.0 + rove_size)
         )
+        # Construct a string to disambiguate different repeats of -Inf dB SRS
+        tag = "matched_to_$(id(stim_tar[1]))"
+
+        # Bundle into tuple of AvgPatterns
         ( 
-            AvgPattern(; stimuli=stim_ref, model=model),
+            AvgPattern(; stimuli=stim_ref, model=model, tag=tag),
             AvgPattern(; stimuli=stim_tar, model=model),
         )
     end
@@ -85,7 +91,8 @@ function Utilities.setup(
     model::Model, 
     increments=[-20.0, -10.0, 0.0], 
     center_freq::Float64=1000.0, 
-    n_comp::Int64=21;
+    n_comp::Int64=21,
+    rove_size::Float64=0.001;
     preprocessor=Utilities.pre_nothing,
     observer=obs_maxrate,
 )
@@ -93,19 +100,24 @@ function Utilities.setup(
     patterns = map(increments) do increment
         # Make stimuli
         stim_ref = RovedStimulus(
-            ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, increment=-Inf), 
+            ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, pedestal_level=70.0, increment=-Inf), 
             n_rep_trial; 
             rove_params=[:pedestal_level], 
-            rove_dist=Uniform(60.0, 80.0)
+            rove_dist=Uniform(70.0 - rove_size, 70.0 + rove_size),
         )
         stim_tar = RovedStimulus(
-            ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, increment=increment), 
+            ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, pedestal_level=70.0, increment=increment), 
             n_rep_trial; 
             rove_params=[:pedestal_level], 
-            rove_dist=Uniform(60.0, 80.0)
+            rove_dist=Uniform(70.0 - rove_size, 70.0 + rove_size),
         )
+        
+        # Construct a string to disambiguate different repeats of -Inf dB SRS
+        tag = "matched_to_$(id(stim_tar[1]))"
+
+        # Combine into tuple
         ( 
-            AvgPattern(; stimuli=stim_ref, model=model),
+            AvgPattern(; stimuli=stim_ref, model=model, tag=tag),
             AvgPattern(; stimuli=stim_tar, model=model),
         )
     end

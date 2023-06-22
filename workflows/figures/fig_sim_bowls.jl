@@ -1,3 +1,4 @@
+## Old version
 fig = genfig_theta_bowls("singlechannel"; marker=:rect)
 save(projectdir("plots", "manuscript_fig_theta_a1.svg"), fig)
 
@@ -27,3 +28,10 @@ save(projectdir("plots", "manuscript_fig_theta_b.svg"), fig)
 
 fig = genfig_theta_freq_bowls_summary_free()
 save(projectdir("plots", "manuscript_fig_theta_b2.svg"), fig)
+
+## New version
+fig = genfig_sim_bowls_density_and_frequency_bowls()
+save(projectdir("plots", "fig_sim_bowls_density_and_frequency_bowls.svg"), fig)
+
+fig = genfig_sim_bowls_summary()
+save(projectdir("plots", "fig_sim_bowls_summary.svg"), fig)

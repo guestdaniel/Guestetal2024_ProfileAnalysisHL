@@ -117,3 +117,133 @@ function compare_behavior_to_simulations()
 
     return results
 end
+
+function diagnostic_plot_behavior_vs_simulations()
+    # Get full dataframe
+    df = compare_behavior_to_simulations()
+
+    # Compile relevant behavioral data
+    beh = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
+    beh = @chain beh begin
+        # Subset to only fixed-level data and "NH" subjects
+        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+
+        # Group by freq, component count, and group
+        groupby([:freq, :n_comp])
+
+        # Summarize
+        @combine(
+            :stderr = std(:threshold)/sqrt(length(:threshold)),
+            :threshold = mean(:threshold),
+        )
+
+        # Order in the correct way
+        @orderby(:freq, :n_comp)
+    end
+
+    # Loop over all combinations of mode and model
+    itr = collect(Iterators.product(unique(df.mode), unique(df.model)))
+    figs = map(itr) do (mode, model)
+        # Subset data
+        df_subset = @subset(df, :model .== model, :mode .== mode)
+
+        # Create figure
+        fig = Figure(; resolution=(500, 300))
+        ax = Axis(fig[1, 1])
+        ylims!(ax, -40.0, 10.0)
+
+        # Plot each bowl, with raw and adjusted thresholds
+        map(enumerate([500.0, 1000.0, 2000.0, 4000.0])) do (idx, freq)
+            # Subset further
+            sims = @subset(df_subset, :center_freq .== freq, :adjusted .== false)
+            sims_adj = @subset(df_subset, :center_freq .== freq, :adjusted .== true)
+            behs = @subset(beh, :freq .== freq)
+            scatter!(ax, (1:5) .+ (idx-1)*6, sims.θ; color=:pink)
+            scatter!(ax, (1:5) .+ (idx-1)*6, sims_adj.θ; color=:red)
+            scatter!(ax, (1:5) .+ (idx-1)*6, behs.threshold; color=:black)
+            lines!(ax, (1:5) .+ (idx-1)*6, sims.θ; color=:pink)
+            lines!(ax, (1:5) .+ (idx-1)*6, sims_adj.θ; color=:red)
+            lines!(ax, (1:5) .+ (idx-1)*6, behs.threshold; color=:black)
+        end
+
+        # Add ticks
+        ax.xticks = (
+            vcat([(1:5) .+ (i-1)*6 for i in 1:4]...),
+            repeat(["5", "13", "21", "29", "36"], 4),
+        )
+
+        # Add labels
+        ax.xlabel = "Number of components"
+        ax.ylabel = "Threshold (dB SRS)"
+
+        # Add info at top of page
+        err = round(@subset(df_subset, :adjusted .== false).rms[1]; digits=3)
+        err_adj = round(@subset(df_subset, :adjusted .== true).rms[1]; digits=3)
+        errvar = round(100.0 * @subset(df_subset, :adjusted .== false).varexp[1]; digits=3)
+        errvar_adj = round(100.0 * @subset(df_subset, :adjusted .== true).varexp[1]; digits=3)
+
+        fullstring = "$model // $mode \n offset = $(round(df_subset.offset[1]; digits=3)) dB \n rms = $err dB, rms_adj = $err_adj dB \n variance explained = $errvar %, variance explained adjusted = $errvar_adj %"
+        ax.title = fullstring
+        fig
+    end
+
+    # Combine into one master figure
+    fig = displayimg(tilecat(getimg.(figs)))
+end
+
+function diagnostic_plot_behavior_vs_simulations_flavor2()
+    # Get full dataframe
+    df = compare_behavior_to_simulations()
+
+    # Compile relevant behavioral data
+    beh = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
+    beh = @chain beh begin
+        # Subset to only fixed-level data and "NH" subjects
+        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+
+        # Group by freq, component count, and group
+        groupby([:freq, :n_comp])
+
+        # Summarize
+        @combine(
+            :stderr = std(:threshold)/sqrt(length(:threshold)),
+            :threshold = mean(:threshold),
+        )
+
+        # Order in the correct way
+        @orderby(:freq, :n_comp)
+    end
+
+    # Loop over all combinations of mode and model
+    itr = collect(Iterators.product(unique(df.mode), unique(df.model)))
+    figs = map(itr) do (mode, model)
+        # Subset data
+        df_subset = @subset(df, :model .== model, :mode .== mode)
+
+        # Create figure
+        fig = Figure(; resolution=(300, 300))
+        ax = Axis(fig[1, 1])
+
+        # Scatter adjusted vs real thresholds
+        scatter!(ax, beh.threshold, @subset(df_subset, :adjusted .== true).θ)
+
+        # Add labels
+        ax.xlabel = "Behavioral threshold"
+        ax.ylabel = "Modeled threshold"
+
+        # Add info at top of page
+        err = round(@subset(df_subset, :adjusted .== false).rms[1]; digits=3)
+        err_adj = round(@subset(df_subset, :adjusted .== true).rms[1]; digits=3)
+        errvar = round(100.0 * @subset(df_subset, :adjusted .== false).varexp[1]; digits=3)
+        errvar_adj = round(100.0 * @subset(df_subset, :adjusted .== true).varexp[1]; digits=3)
+        ρ = round(cor(beh.threshold, @subset(df_subset, :adjusted .== true).θ); digits=3)
+        ρ² = round(ρ^2; digits=3)
+
+        fullstring = "$model // $mode \n offset = $(round(df_subset.offset[1]; digits=3)) dB \n rms = $err dB, rms_adj = $err_adj dB \n variance explained = $errvar %\n variance explained adjusted = $errvar_adj % \n ρ = $ρ, ρ²=$(ρ²)"
+        ax.title = fullstring
+        fig
+    end
+
+    # Combine into one master figure
+    fig = displayimg(tilecat(getimg.(figs)))
+end

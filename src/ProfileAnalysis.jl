@@ -22,6 +22,7 @@ using ProgressMeter
 using Printf
 using Match
 using Optim
+using GLM
 
 # General code
 include("stimuli.jl")            # stimulus code
@@ -37,7 +38,8 @@ include(joinpath("experiments", "PFs", "PFs.jl"))
 include(joinpath("experiments", "PFs", "PFs_postprocess.jl"))
 
 # Figure code
-include("genfigs.jl")
+#include("genfigs.jl")
+include(joinpath("figures", "fig_sim_bowls", "fig_sim_bowls.jl"))
 
 # Constants
 const C_path_models = "C:\\home\\daniel\\cl_sim\\pahi"
