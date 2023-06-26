@@ -14,7 +14,8 @@ struct ProfileAnalysis_PFObserver <: ProfileAnalysis_PF end
 function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
-    n_comps = [5, 9, 13, 17, 21, 25, 29, 33, 37]
+    # n_comps = [5, 9, 13, 17, 21, 25, 29, 33, 37]  # removed temporarily to reduce runtime
+    n_comps = [5, 13, 21, 29, 37]
     rove_sizes = [0.001, 10.0]
 
     # Configure other values
