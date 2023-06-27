@@ -1,6 +1,7 @@
 export logistic, logistic_fit, logistic_predict, hearing_group, hl_offsets,
     hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function, modelstr,
-    variance_explained, get_hl_colors, color_group
+    variance_explained, get_hl_colors, color_group, fetch_behavioral_data,
+    avg_behavioral_data
 
 """
     logistic(x, λ; L, offset)
@@ -130,5 +131,26 @@ function color_group(group::String)
         hl_colors[2]
     else
         hl_colors[3]
+    end
+end
+
+# Function to fetch behavioral data
+function fetch_behavioral_data()
+    # Load in data
+    DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
+end
+
+# Function to compute averages and standard errors in behavioral data
+function avg_behavioral_data(df)
+    # Summarize as function of number of components and group
+    @chain df begin
+        # Group by freq, component count, and group
+        groupby([:freq, :n_comp, :hl_group, :rove])
+
+        # Summarize
+        @combine(
+            :stderr = std(:threshold)/sqrt(length(:threshold)),
+            :threshold = mean(:threshold),
+        )
     end
 end

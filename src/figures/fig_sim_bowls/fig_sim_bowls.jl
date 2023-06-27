@@ -18,45 +18,6 @@ export genfig_sim_bowls_density_and_frequency_bowls,
 #   the requested mode, where mode ∈ ["singlechannel", "profilechannel", "templatebased"]. 
 #   Used for supplemental figures, where we show all results.
 
-# function theta_get_behavioral_data()
-#     # Load in data
-#     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
-
-#     # Filter data only to include relevant subsections (1 kHz data)
-#     df = @subset(df, :rove .== "fixed level")
-
-#     # Summarize as function of number of components and group
-#     @chain df begin
-#         # Group by freq, component count, and group
-#         groupby([:freq, :n_comp, :hl_group])
-
-#         # Summarize
-#         @combine(
-#             :stderr = std(:threshold)/sqrt(length(:threshold)),
-#             :threshold = mean(:threshold),
-#         )
-#     end
-# end
-
-# function theta_get_external_data()
-#     # Load in data
-#     df = DataFrame(CSV.File(datadir("ext_pro", "all_data.csv")))
-
-#     # Subset Green, Kidd, and Picardi and re-express n_comp in "standard" n_comp units
-#     temp = @subset(df, :experiment .== "Green, Kidd, and Picardi (1983), Figure 4", :bandwidth .> 2.5)
-#     temp.n_comp .= (12 * 4.64386) ./ temp.spacing_st
-
-#     # Subset other datasets that are more amenable to our needs (n_comp is directly comparable)
-#     df = vcat(
-#         @subset(df, :experiment .== "Green and Mason (1985), Figure 3"),
-#         @subset(df, :experiment .== "Bernstein and Green (1987), Figure 2", :freq .== 1000.0),
-# #        temp,
-#     )
-
-#     df = @orderby(df, :n_comp)
-#     return df
-# end
-
 # function theta_plot!(ax, n_comps, θ, beh, ext, center_freq; color=:black, marker=:rect, show_beh=false, show_ext=false, show_comb=false)
 #     # Plot external data
 #     if show_ext
@@ -112,7 +73,7 @@ export genfig_sim_bowls_density_and_frequency_bowls,
 function genfig_theta_bowls(
     mode::String;
     center_freqs=[500.0, 1000.0, 2000.0, 4000.0],
-    n_comps=[5, 9, 13, 17, 21, 25, 29, 33, 37],
+    n_comps=[5, 13, 21, 29, 37],
     increments=vcat(-999.9, -45.0:2.5:5.0),
     marker=:rect,
 )
@@ -653,37 +614,26 @@ end
 # end
 
 """
-    test()
+    genfig_sim_bowls_density_and_frequency_bowls()
 
-Test
+Generate figure depicting behavior vs model performance
 
-Do tests
+Generate figure depicting "bowls" in different frequency conditions for different models
+and observers (rows and columns, respectively).
 """
 function genfig_sim_bowls_density_and_frequency_bowls()
     # Get full dataframe
     df = compare_behavior_to_simulations()
 
     # Compile relevant behavioral data
-    beh = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
-    beh = @chain beh begin
-        # Subset to only fixed-level data and "NH" subjects
+    beh = @chain fetch_behavioral_data() begin
         @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
-
-        # Group by freq, component count, and group
-        groupby([:freq, :n_comp])
-
-        # Summarize
-        @combine(
-            :stderr = std(:threshold)/sqrt(length(:threshold)),
-            :threshold = mean(:threshold),
-        )
-
-        # Order in the correct way
-        @orderby(:freq, :n_comp)
+        avg_behavioral_data()
     end
 
     # Set up figure
-    fig = Figure(; resolution=(800, 500))
+    set_theme!(theme_carney)
+    fig = Figure(; resolution=(700, 450))
     axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:3]
 
     # Loop over all combinations of mode and model
@@ -714,6 +664,8 @@ function genfig_sim_bowls_density_and_frequency_bowls()
             lines!(ax, [6 + (idx-1)*7, 6 + (idx-1)*7], [μ_beh, μ_mod]; color=:lightgray)
             scatter!(ax, [6 + (idx-1)*7], [μ_beh]; color=:black, marker=:rect)
             scatter!(ax, [6 + (idx-1)*7], [μ_mod]; color=:red, marker=:rect)
+            scatter!(ax, [6 + (idx-1)*7], [μ_beh]; color=:white, marker=:rect, markersize=3.0)
+            scatter!(ax, [6 + (idx-1)*7], [μ_mod]; color=:white, marker=:rect, markersize=3.0)
         end
 
         # Add ticks
@@ -732,14 +684,18 @@ function genfig_sim_bowls_density_and_frequency_bowls()
 
         # Add info at top of page
         errvar = max(0.0, round(100.0 * @subset(df_subset, :adjusted .== true).varexp[1]; digits=3))
-
-        fig
     end
     
     # Add labels
     Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2); colgap!(fig.layout, 1, Relative(0.01));
     Label(fig[4, 1:3], "Number of components // Target frequency (Hz)"); rowgap!(fig.layout, 3, Relative(0.05));
+
+    # Adjust colgaps and neaten grid
     neaten_grid!(axs)
+    colgap!(fig.layout, 2, Relative(0.01))
+    colgap!(fig.layout, 3, Relative(0.01))
+    rowgap!(fig.layout, 1, Relative(0.01))
+    rowgap!(fig.layout, 2, Relative(0.01))
 
     # Return
     fig
