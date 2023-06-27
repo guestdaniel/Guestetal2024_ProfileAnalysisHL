@@ -34,6 +34,9 @@ These files have the following columns:
 └── Project.toml             # Julia environment management file
 ```
 
+# Figures
+
+
 # Workflows
 
 ## Behavioral data workflow

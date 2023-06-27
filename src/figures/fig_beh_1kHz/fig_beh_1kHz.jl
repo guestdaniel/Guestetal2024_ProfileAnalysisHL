@@ -136,6 +136,13 @@ function genfig_beh_1kHz_psychometric_functions()
     fig
 end
 
+"""
+    genfig_beh_1kHz_bowls()
+
+Plot classic profile-analysis "bowls" 
+
+Plot group-average psychometric functions for each hearing-status group for each density condition at 1kHz, emphasizing roved vs unroved data
+"""
 function genfig_beh_1kHz_bowls()
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
