@@ -14,14 +14,14 @@ function Utilities.setup(
     increment::Float64, 
     center_freq::Float64, 
     n_comp::Int64;
-    rove_range=20.0,
+    rove_range=10.0,
 )
     # Make stimuli
     stim = RovedStimulus(
         ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, increment=increment, fs=fs), 
         n_rep_trial; 
         rove_params=[:pedestal_level], 
-        rove_dist=Uniform(70.0 - rove_range/2, 70.0 + rove_range/2)
+        rove_dist=Uniform(70.0 - rove_range, 70.0 + rove_range),
     )
 
     # Bundle with stimuli with AvgPattern

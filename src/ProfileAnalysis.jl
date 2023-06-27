@@ -41,6 +41,9 @@ include(joinpath("experiments", "PFs", "PFs_postprocess.jl"))
 #include("genfigs.jl")
 include(joinpath("figures", "fig_beh_1kHz.jl"))
 include(joinpath("figures", "fig_beh_frequency.jl"))
+include(joinpath("figures", "fig_beh_hearing_loss.jl"))
+include(joinpath("figures", "fig_sim_methods.jl"))
+include(joinpath("figures", "fig_sim_psychometric_functions.jl"))
 include(joinpath("figures", "fig_sim_bowls.jl"))
 
 # Constants

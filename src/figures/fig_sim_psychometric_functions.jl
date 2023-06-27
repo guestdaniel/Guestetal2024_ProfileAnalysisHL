@@ -1,21 +1,109 @@
-export genfig_eta_b1_rate_curves,
-       genfig_eta_b2_rate_curves,
-       genfig_eta_b3_rate_curves,
-       genfig_zeta_c1_psychometric_functions,
-       genfig_zeta_c2_psychometric_functions,
-       genfig_zeta_c3_psychometric_functions,
-       genfig_theta_bowls,
-       genfig_theta_bowl_1kHz_vs_data,
-       genfig_theta_bowl_1kHz_vs_data_free,
-       genfig_theta_freq_bowls_summary,
-       genfig_theta_freq_bowls_summary_free
+export genfig_sim_psychometric_functions_profiles,
+       genfig_sim_psychometric_functions_colorbar
 
-# Figure Η
-# Figure Η has a variety of very different subplots, each implemented as different functions (listed below). The top panel shows example z-score rates for a 21-component, 1-kHz stimulus. The bottom left panel shows the decision variables that enter into the psychometric function estimation procedure in the different models. The bottom right panel shows the corresponding estimated psychometric function.
-# - genfig_eta_rate_curves: TODO, fix, ind -> comb
-# - genfig_eta_psychometric_functions: TODO, fix zeta -> eta
-function genfig_eta_b1_rate_curves(increments=vcat(-999.9, -45.0:2.5:5.0), config::Config=Default())
+"""
+    genfig_sim_psychometric_functions_profiles
+
+Plot example "profiles" for all tested auditory models
+"""
+function genfig_sim_psychometric_functions_profiles()
+    # Set up plot
+    increments=[-999.9, -20.0, -10.0, 0.0]
+    set_theme!(theme_carney; fontsize=10.0)
+    fig = Figure(; resolution=(430, 130))
+    axs = [Axis(fig[1, i]) for i in 1:4]
+
+    # Add indicators for harmonic frequencies
+    freqs = log2.(LogRange(1000.0/5, 1000.0*5, 21) ./ 1000.0)
+    [arrows!(
+        ax, 
+        freqs,
+        repeat([4.0], length(freqs)),
+        repeat([0.0], length(freqs)),
+        repeat([-0.5], length(freqs)); 
+        color=:lightgray,
+        arrowsize=4.0,
+    ) for ax in axs]
+    [xlims!(ax, -1.0, 1.0) for ax in axs]
+
+    # Set up colors 
+    cmap_periphe = range(HSL(270.0, 0.0, 0.8), HSL(270.0, 0.0, 0.3); length=length(increments))
+
+    # Fetch models
+    models = setup(ProfileAnalysis_AvgPatterns(), 1000.0)
+
+    # Do each plot
+    for (idx, inc) in enumerate(increments)
+        for (ax, model) in zip(axs, models)
+            _plot_sim!(ax, _prep_sims(inc, model)...; color=cmap_periphe[idx])
+        end
+    end
+
+    # Adjust
+    axs[1].ylabel = "Normalized Δ rate"
+    Label(fig[2, 2:3], "CF (oct re: target frequency)"; tellwidth=false)
+    rowgap!(fig.layout, 1, Relative(0.03))
+    colgap!(fig.layout, Relative(0.02))
+
+    # Return
+    return fig
+end
+
+function _prep_model(fiber_type::String; center_freq=1000.0)
+    model = AuditoryNerveZBC2014(; fiber_type=fiber_type, cf=LogRange(center_freq/2, center_freq*2, 91), fractional=true)
+    return model
+end
+
+function _prep_model(modeltype::DataType, params::Dict; center_freq=1000.0)
+    frontend = AuditoryNerveZBC2014(; cf=LogRange(center_freq/2, center_freq*2, 91), fractional=true)
+    model = modeltype(; frontend=frontend, params...)
+    return model
+end
+
+function _prep_sims(increment, model::Model; center_freq=1000.0, n_comp=21)
+    # Choose experiment
+    exp = ProfileAnalysis_AvgPatterns()
+
+    # Set up simulations
+    sim1 = setup(exp, model, -Inf, center_freq, n_comp)
+    sim2 = setup(exp, model, increment, center_freq, n_comp)
+
+    # Run simulations
+    out1 = @memo Default() simulate(sim1)
+    out2 = @memo Default() simulate(sim2)
+
+    # Return
+    log2.(model.cf ./ center_freq), out2 .- out1
+end
+
+function _plot_sim!(ax, cf, r; color=:black)
+    μ = mean(r)
+    σ = std(r)
+    lines!(ax, cf, μ ./ σ; color=color)
+    ylims!(ax, -5.0, 5.0)
+end
+
+"""
+    genfig_sim_psychometric_functions_colorbar
+
+Make colorbar for previous plot
+"""
+function genfig_sim_psychometric_functions_colorbar()
+    # Render colorbars manually and save
+    fig = Figure(; resolution=(50, 135))
+    cb = Colorbar(fig[1, 1]; limits=(0, 1), colormap=cgrad(range(HSL(270.0, 0.0, 0.8), HSL(270.0, 0.0, 0.3); length=4); categorical=true))
+    cb.ticks = ((1/(4*2)):(2/(4*2)):(1.0 - 1/(4*2)), vcat("-Inf", string.(Int.([-20.0, -10.0, 0.0]))))
+    fig
+end
+
+"""
+    genfig_sim_psychometric_functions_rate_curves()
+
+Plot "rate curves" depicting decision variable response as function of increment size
+"""
+function genfig_eta_b1_rate_curves()
     # Set up experiment
+    increments=vcat(-999.9, -45.0:2.5:5.0)
     exp = ProfileAnalysis_AvgPatterns()
 
     # Set up plot
