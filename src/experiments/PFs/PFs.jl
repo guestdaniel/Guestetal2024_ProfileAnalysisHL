@@ -79,7 +79,11 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_HearingI
     subjs = unique(fetch_behavioral_data().subj)
 
     # Load audiograms, grab only needed rows, and transform into Audiogram objects
-    audiograms = DataFrame(CSV.File("C:\\Users\\dguest2\\cl_data\\pahi\\raw\\thresholds_2022-07-18.csv"))
+    if (Sys.KERNEL == :Linux)
+        audiograms = DataFrame(CSV.File("/home/dguest2/thresholds_2022-07-18.csv"))
+    else
+        audiograms = DataFrame(CSV.File("C:\\Users\\dguest2\\cl_data\\pahi\\raw\\thresholds_2022-07-18.csv"))
+    end
     audiograms[audiograms.Subject .== "S98", :Subject] .= "S098"
     audiograms = @subset(audiograms, in.(:Subject, Ref(subjs)))
     audiograms = map(subjs) do subj
