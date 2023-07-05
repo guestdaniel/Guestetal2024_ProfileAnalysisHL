@@ -187,10 +187,10 @@ function genfig_sim_methods_example_responses()
     axs = [Axis(fig[1, i]) for i in 1:4]
 
     # Do each plot
-    _plot_pair!(axs[1], _prep_sims(-10.0, "high")...; color=:black)
-    _plot_pair!(axs[2], _prep_sims(-10.0, "low")...; color=:black)
-    _plot_pair!(axs[3], _prep_sims(-10.0, InferiorColliculusSFIEBE, StandardBE)...; color=:black)
-    _plot_pair!(axs[4], _prep_sims(-10.0, InferiorColliculusSFIEBS, StandardBS)...; color=:black)
+    example_plot_pair!(axs[1], example_prep_sims(-10.0, "high")...; color=:black)
+    example_plot_pair!(axs[2], example_prep_sims(-10.0, "low")...; color=:black)
+    example_plot_pair!(axs[3], example_prep_sims(-10.0, InferiorColliculusSFIEBE, StandardBE)...; color=:black)
+    example_plot_pair!(axs[4], example_prep_sims(-10.0, InferiorColliculusSFIEBS, StandardBS)...; color=:black)
 
     # Adjust
     axs[1].ylabel = "Firing rate (sp/s)"
@@ -202,20 +202,20 @@ function genfig_sim_methods_example_responses()
     fig
 end
 
-function _prep_model(fiber_type::String; center_freq=1000.0)
+function example_prep_model(fiber_type::String; center_freq=1000.0)
     model = AuditoryNerveZBC2014(; fiber_type=fiber_type, cf=LogRange(center_freq/2, center_freq*2, 91), fractional=false)
     return model
 end
 
-function _prep_model(modeltype::DataType, params::Dict; center_freq=1000.0)
+function example_prep_model(modeltype::DataType, params::Dict; center_freq=1000.0)
     frontend = AuditoryNerveZBC2014(; cf=LogRange(center_freq/2, center_freq*2, 91), fractional=false)
     model = modeltype(; frontend=frontend, params...)
     return model
 end
 
-function _prep_sims(increment, args...; center_freq=1000.0, n_comp=21)
+function example_prep_sims(increment, args...; center_freq=1000.0, n_comp=21)
     # Get model
-    model = _prep_model(args...; center_freq=center_freq)
+    model = example_prep_model(args...; center_freq=center_freq)
 
     # Make stimuli
     stim_ref = ProfileAnalysisTone(; n_comp=n_comp, center_freq=center_freq, increment=-Inf)
@@ -232,7 +232,7 @@ function _prep_sims(increment, args...; center_freq=1000.0, n_comp=21)
     log2.(model.cf ./ center_freq), map(mean, out_ref), map(mean, out_tar)
 end
 
-function _plot_pair!(ax, cf, r, t; color=:black)
+function example_plot_pair!(ax, cf, r, t; color=:black)
     lines!(ax, cf, r; color=color)
     lines!(ax, cf, t; color=:red)
     ylims!(ax, 0.0, 1.25 * max(maximum(r), maximum(t)))

@@ -1,4 +1,5 @@
 export genfig_sim_bowls_density_and_frequency_bowls,
+       genfig_sim_bowls_density_and_frequency_bowls_rove_effects,
        genfig_sim_bowls_summary
 
 # Figure Θ
@@ -621,9 +622,11 @@ Generate figure depicting behavior vs model performance
 Generate figure depicting "bowls" in different frequency conditions for different models
 and observers (rows and columns, respectively).
 """
-function genfig_sim_bowls_density_and_frequency_bowls()
+function genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
     # Get full dataframe
-    df = compare_behavior_to_simulations()
+    df = @chain load_simulated_thresholds_adjusted() begin  
+        @subset(:rove_size .== rove_size)
+    end
 
     # Compile relevant behavioral data
     beh = @chain fetch_behavioral_data() begin
@@ -711,12 +714,13 @@ fixed-level conditions) in terms of RMS error in dB as a function of model and o
 combinations (e.g., single-channel LSR vs multi-channel IC-BE). Relies on 
 compare_behavior_to_simulations() function in the PF postprocessing code.
 """
-function genfig_sim_bowls_summary()
+function genfig_sim_bowls_summary(; rove_size=0.001)
     # Get model results and summarize
-    results = @chain compare_behavior_to_simulations() begin
-        groupby([:model, :mode, :adjusted])
+    results = @chain load_simulated_thresholds_adjusted() begin
+        groupby([:model, :mode, :rove_size, :adjusted])
         @combine(:rms = mean(:rms), :varexp = mean(:varexp))
         @orderby(:adjusted, :model)
+        @subset(:rove_size .== rove_size)
     end
 
     # Set up fig and axes
@@ -763,5 +767,96 @@ function genfig_sim_bowls_summary()
 
     # Add legend to the right
     Legend(fig[:, 3], bp[1][1], ["LSR", "BE", "BS"])
+    fig
+end
+
+"""
+    genfig_sim_bowls_density_and_frequency_bowls_rove_effects()
+
+Generate figure depicting model performance as function of rove
+
+Generate figure depicting "bowls" in different frequency conditions for different models and
+observers (rows and columns, respectively). Plot unroved and roved thresholds side-by-side
+"""
+function genfig_sim_bowls_density_and_frequency_bowls_rove_effects()
+    # Get full dataframe
+    df = load_simulated_thresholds_adjusted()
+
+    # Set up figure
+    set_theme!(theme_carney)
+    fig = Figure(; resolution=(700, 450))
+    axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:3]
+
+    # Loop over all combinations of mode and model
+    itr = collect(Iterators.product(unique(df.model), unique(df.mode)))
+    map(zip(itr, axs)) do ((model, mode), ax)
+        # Plot each bowl, with raw and adjusted thresholds
+        map(enumerate([500.0, 1000.0, 2000.0, 4000.0])) do (idx, freq)
+            # Subset further
+            sims_unroved = @subset(
+                df, 
+                :center_freq .== freq, 
+                :adjusted .== false,
+                :model .== model,
+                :mode .== mode,
+                :rove_size .== 0.001,
+            )
+            sims_roved = @subset(
+                df, 
+                :center_freq .== freq, 
+                :adjusted .== false,
+                :model .== model,
+                :mode .== mode,
+                :rove_size .== 10.0,
+            )
+
+            # Add scatters and lines for: unadjusted thresholds (pink), adjusted thresholds
+            # (red), and behavioral thresholds (black)
+            Δ = sims_roved.θ .- sims_unroved.θ
+            map(enumerate(zip(sims_roved.θ, sims_unroved.θ))) do (idx_δ, (θ_roved, θ_unroved))
+                lines!(ax, [idx_δ + (idx-1)*7, idx_δ + (idx-1)*7], [θ_unroved, θ_roved]; color=:darkgray)
+            end
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_unroved.θ; color=:black, marker=:circle)
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_unroved.θ; color=:black)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:orange, marker=:rect)
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:orange)
+
+            # Add another marker at the means in each frequency condition, beside data to right
+            scatter!(ax, [6 + (idx-1)*7], [mean(sims_unroved.θ)]; color=:black, marker=:circle)
+            scatter!(ax, [6 + (idx-1)*7], [mean(sims_roved.θ)]; color=:orange, marker=:rect)
+            scatter!(ax, [6 + (idx-1)*7], [mean(sims_unroved.θ)]; color=:white, marker=:circle, markersize=3.0)
+            scatter!(ax, [6 + (idx-1)*7], [mean(sims_roved.θ)]; color=:white, marker=:rect, markersize=3.0)
+
+            # Add text indicating average rove effect size
+            text!(ax, [3 + (idx-1)*7], [-45.0]; text="$(round(mean(Δ[.!isnan.(Δ)]); digits=1)) dB", align=(:center, :bottom), color=:darkgray)
+        end
+
+        # Add ticks
+        ax.xticks = (
+            vcat([(1:5) .+ (i-1)*7 for i in 1:4]...),
+            repeat(["5", "13", "21", "29", "37"], 4),
+        )
+
+        # Set limits
+        ylims!(ax, -50.0, 10.0)
+        ax.yticks = -40.0:10.0:10.0
+
+        # Add text label indicating performance
+#        err = round(@subset(df_subset, :adjusted .== true).rms[1]; digits=1)
+#        text!(ax, [20.0], [-33.0]; color=:red, text="$err dB")
+    end
+    
+    # Add labels
+    Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2); colgap!(fig.layout, 1, Relative(0.01));
+    Label(fig[4, 1:3], "Number of components // Target frequency (Hz)"); rowgap!(fig.layout, 3, Relative(0.05));
+
+    # Adjust colgaps and neaten grid
+    neaten_grid!(axs)
+    colgap!(fig.layout, 2, Relative(0.01))
+    colgap!(fig.layout, 3, Relative(0.01))
+    rowgap!(fig.layout, 1, Relative(0.01))
+    rowgap!(fig.layout, 2, Relative(0.01))
+
+    # Return
     fig
 end

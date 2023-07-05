@@ -3,18 +3,20 @@
 
 # Handle exports
 export ProfileAnalysis_PF, ProfileAnalysis_PFTemplateObserver, ProfileAnalysis_PFObserver,
+       ProfileAnalysis_PFTemplateObserver_HearingImpaired,
        obs_dec_rate_at_tf, obs_inc_rate_at_tf, pre_emphasize_profile, getpffunc
 
 # Declare experiment types
 abstract type ProfileAnalysis_PF <: ProfileAnalysisExperiment end
 struct ProfileAnalysis_PFTemplateObserver <: ProfileAnalysis_PF end
+struct ProfileAnalysis_PFTemplateObserver_ControlConditions <: ProfileAnalysis_PF end
+struct ProfileAnalysis_PFTemplateObserver_HearingImpaired <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFObserver <: ProfileAnalysis_PF end
 
 # Declare setup function to set up entire experiment for batch run
 function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
-    # n_comps = [5, 9, 13, 17, 21, 25, 29, 33, 37]  # removed temporarily to reduce runtime
     n_comps = [5, 13, 21, 29, 37]
     rove_sizes = [0.001, 10.0]
 
@@ -35,6 +37,86 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
     vcat(sims...)
 end
 
+# Declare setup functon to set up control conditions for batch run. This control experiment
+# tests the 5-component condition with a larger frequency range [2^-2.5, 2^2.5] to capture
+# the full ~4.6 octave bandwidth around the target frequency
+function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_ControlConditions)
+    # Choose frequencies, component counts, and rove sizes to loop over
+    center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
+    n_comps = [5]
+    rove_sizes = [0.001, 10.0]
+
+    # Configure other values
+    increments=vcat(-999.9, -45.0:2.5:5.0)
+
+    # Get simulations
+    sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
+        # Get possible models
+        models = Utilities.setup(experiment, center_freq, [2^-2.5, 2^2.5])
+
+        # Loop over models and assemble PFs
+        map(models) do model
+            Utilities.setup(experiment, model, increments, center_freq, n_comp, rove_size)
+        end
+    end
+
+    vcat(sims...)
+end
+
+# Declare setup functon to setup hearing impaired simulations
+function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_HearingImpaired)
+    # Choose frequencies, component counts, and rove sizes to loop over
+#    center_freqs = [1000.0, 2000.0, 4000.0]
+    center_freqs = [1000.0, 2000.0]
+    n_comps = [5, 13, 21, 29, 37]
+#    rove_sizes = [0.001, 10.0]
+    rove_sizes = [0.001]
+
+    # Configure other values
+    increments=-30.0:2.5:5.0
+
+    # Load behavioral data and fetch list of unique subject IDs
+    subjs = unique(fetch_behavioral_data().subj)
+
+    # Load audiograms, grab only needed rows, and transform into Audiogram objects
+    audiograms = DataFrame(CSV.File("C:\\Users\\dguest2\\cl_data\\pahi\\raw\\thresholds_2022-07-18.csv"))
+    audiograms[audiograms.Subject .== "S98", :Subject] .= "S098"
+    audiograms = @subset(audiograms, in.(:Subject, Ref(subjs)))
+    audiograms = map(subjs) do subj
+        # Subset row
+        row = audiograms[audiograms.Subject .== subj, :]
+
+        # Select frequencies and thresholds
+        f = [250.0, 500.0, 1000.0, 1500.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0]
+        θ = Vector(row[1, 4:12])
+
+        # Combine into Audiogram objects
+        Audiogram(; freqs=f, thresholds=θ, species="human", desc=subj)
+    end
+
+    # Get simulations
+    sims = map(Iterators.product(center_freqs, n_comps, rove_sizes, audiograms)) do (center_freq, n_comp, rove_size, audiogram)
+        # Get possible models
+        models = setup_nohsr(experiment, center_freq, cf_range, audiogram; n_cf=n_cf_reduced)
+
+        # Loop over models and assemble PFs
+        map(models) do model
+            Utilities.setup(
+                ProfileAnalysis_PFTemplateObserver(), 
+                model, 
+                increments, 
+                center_freq, 
+                n_comp, 
+                rove_size;
+                n_rep_template=n_rep_template_reduced,
+                n_rep_trial=n_rep_trial_reduced,
+            )
+        end
+    end
+
+    vcat(vcat(sims...)...)
+end
+
 # Declare setup function to return PF for combination of model, increments, center_freq, and n_comp
 function Utilities.setup(
     ::ProfileAnalysis_PFTemplateObserver, 
@@ -42,10 +124,19 @@ function Utilities.setup(
     increments=[-20.0, -10.0, 0.0], 
     center_freq::Float64=1000.0, 
     n_comp::Int64=21,
-    rove_size::Float64=0.001,
+    rove_size::Float64=0.001;
+    n_rep_trial=n_rep_trial,
+    n_rep_template=n_rep_template,
 )
     # Get template
-    template = Utilities.setup(ProfileAnalysis_Templates(), model, center_freq, n_comp, rove_size)
+    template = Utilities.setup(
+        ProfileAnalysis_Templates(), 
+        model, 
+        center_freq, 
+        n_comp, 
+        rove_size; 
+        n_rep_template=n_rep_template,
+    )
 
     # Make stimuli and bind with model into vector of DeltaPatterns
     patterns = map(increments) do increment
@@ -96,6 +187,7 @@ function Utilities.setup(
     rove_size::Float64=0.001;
     preprocessor=Utilities.pre_nothing,
     observer=obs_maxrate,
+    n_rep_trial=n_rep_trial,
 )
     # Make stimuli and bind with model into vector of DeltaPatterns
     patterns = map(increments) do increment

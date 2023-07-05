@@ -37,7 +37,8 @@ function Utilities.setup(
     model::Model, 
     center_freq::Float64, 
     n_comp::Int64,
-    rove_size::Float64=0.001,
+    rove_size::Float64=0.001;
+    n_rep_template=n_rep_template,
 )
     # Make stimuli
     stim = RovedStimulus(

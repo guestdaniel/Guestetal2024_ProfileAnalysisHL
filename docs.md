@@ -19,23 +19,21 @@ These files have the following columns:
 ├── data                     # Behavioral data (internal and external) lives here
 ├── scripts                  # [[TODO --- deprecate]] 
 ├── plots                    # Intermediate figure files and master figure .svg files
-├── src                      # Primary "source" directory
-│   ├── experiments          # Fundamental modeling code for various simulated experiments
+├── src                      # Primary source directory
+│   ├── experiments          # Code for implementing and running various simulated experiments
 │   ├── figures              # Code for compiling simulated results into figures
+│   └── ProfileAnalysis.jl   # Primary source file
 ├── test                     # Contains some scripts for sanity checking code in this repository
 ├── workflows                # Folder containing various "workflows" (sequences of scripts)
 │   ├── behavioral_data      # Workflow for collecting, cleaning, compiling behavioral data
 │   ├── simulations          # Workflow for running simulated experiments
-│   └── figures              # Workflow for generating paper figures
+│   └── genfigs.jl           # Script for generating paper figures
 ├── docs.md                  # Documentation file for the entire repository
 ├── cfg.R                    # [[TODO --- deprecate]] Short script to provide constants/configs shared across all R files
 ├── LICENSE                  # License file for the code contained in this repository
 ├── LICENSE_data             # [[TODO --- add]] License file for the behavioral data contained in this repository
 └── Project.toml             # Julia environment management file
 ```
-
-# Figures
-
 
 # Workflows
 
@@ -66,3 +64,14 @@ Finally, we analyze the fitted threshold data as well as subject data (e.g., aud
 ### Parameter sets
 Parameters were selected by hand to provide balanced responses to modulated noise and profile-analysis stimuli (i.e., a balance between good MTFs and good sustained resposnes to profile-analysis stimuli).
 Selected parameters are available in `src\experiments\parameter_sets.jl`.
+
+### Generating simulations
+Simulations are built and run by source code in `src/experiments`.
+The following commands can run all of the necessary simulations:
+```
+run(ProfileAnalysis_PFTemplateObserver())     # simulate psychometric functions
+run(ProfileAnalysis_PFTemplateObserverHL())   # simulate subset of psychometric functions w/ HI
+run(ProfileAnalysis_PFObserver())             # todo --- add!
+run(ProfileAnalysis_PFObserverHL())           # todo --- add!
+run(... ??? how do patterns?)
+```

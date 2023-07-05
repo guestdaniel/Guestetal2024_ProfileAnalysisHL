@@ -1,12 +1,16 @@
-export postprocess_pfs, load_simulated_thresholds, compare_behavior_to_simulations
+export postprocess_pfs, 
+       compare_behavior_to_simulations,
+       load_simulated_thresholds,
+       load_simulated_thresholds_adjusted
 
 function postprocess_pfs(
     center_freqs=[500.0, 1000.0, 2000.0, 4000.0],
     n_comps=[5, 13, 21, 29, 37],
     increments=vcat(-999.9, -45.0:2.5:5.0),
+    rove_sizes=[0.001, 10.0],
 )
     # Map through models and build dataframe containing thresholds for each model/condition
-    df = map(center_freqs) do center_freq
+    df = map(Iterators.product(center_freqs, rove_sizes)) do (center_freq, rove_size)
         # Map through possible PF modes and plot each with different markers
         out = map(["singlechannel", "profilechannel", "templatebased"]) do mode
             # Handle modeswitch
@@ -24,11 +28,24 @@ function postprocess_pfs(
                 # Map through n_comps for this model, fit psychometric function, and estimate psychometric functions and extract threshold for each
                 θ = map(n_comps) do n_comp
                     # Simulate psychometric function
-                    pf = getpffunc(mode, model, exp)(model, increments, center_freq, n_comp)
-                    out = @memo Default() simulate(pf)
-                    Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
+                    pf = getpffunc(mode, model, exp)(model, increments, center_freq, n_comp, rove_size)
+                    if isfile(pf.patterns[1][1]) & isfile(pf.patterns[end][end])
+                        out = @memo Default() simulate(pf)
+                        Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
+                    else
+                        NaN
+                    end
                 end
-                DataFrame(θ=θ, n_comp=n_comps, center_freq=center_freq, mode=mode, model=model)
+
+                # Compile results into dataframe
+                DataFrame(
+                    θ=θ, 
+                    n_comp=n_comps, 
+                    center_freq=center_freq, 
+                    mode=mode, 
+                    model=model,
+                    rove_size=rove_size,
+                )
             end
 
             # Concatenate and return
@@ -47,10 +64,15 @@ function postprocess_pfs(
 
     # Save dataframe to disk
     save(joinpath("data", "sim_pro", "model_thresholds.jld2"), Dict("df" => df))
+    df
 end
 
 function load_simulated_thresholds()
     load(joinpath("data", "sim_pro", "model_thresholds.jld2"))["df"]
+end
+
+function load_simulated_thresholds_adjusted()
+    load(joinpath("data", "sim_pro", "model_thresholds_adjusted.jld2"))["df"]
 end
 
 function find_constant(θ_hat, θ)
@@ -59,21 +81,9 @@ end
 
 function compare_behavior_to_simulations()
     # Compile relevant behavioral data
-    beh = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
-    beh = @chain beh begin
-        # Subset to only fixed-level data and "NH" subjects
+    beh = @chain fetch_behavioral_data() begin
         @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
-
-        # Group by freq, component count, and group
-        groupby([:freq, :n_comp])
-
-        # Summarize
-        @combine(
-            :stderr = std(:threshold)/sqrt(length(:threshold)),
-            :threshold = mean(:threshold),
-        )
-
-        # Order in the correct way
+        avg_behavioral_data()
         @orderby(:freq, :n_comp)
     end
 
@@ -90,7 +100,7 @@ function compare_behavior_to_simulations()
         @orderby(:center_freq, :n_comp)
 
         # Group simulations by model and observer type
-        groupby([:model, :mode])
+        groupby([:model, :mode, :rove_size])
 
         # Compute constant that optimizes match between behavior and model across ALL conditions
         @transform(:offset = find_constant(:θ, beh.threshold))
@@ -106,7 +116,7 @@ function compare_behavior_to_simulations()
         @transform(:adjusted = :adjusted .!= "θ")
 
         # Group simulations by model and observer type
-        groupby([:model, :mode, :adjusted])
+        groupby([:model, :mode, :rove_size, :adjusted])
 
         # Compute all losses
         @transform(
@@ -115,6 +125,8 @@ function compare_behavior_to_simulations()
         )
     end
 
+    # Save dataframe to disk
+    save(joinpath("data", "sim_pro", "model_thresholds_adjusted.jld2"), Dict("df" => results))
     return results
 end
 

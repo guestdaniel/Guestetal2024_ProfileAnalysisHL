@@ -48,15 +48,25 @@ save(projectdir("plots", "sim_methods", "05_example_responses.svg"), fig)
 # Figure 5 // sim_psychometric_functions
 # Modeling detailed example results figure
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# TODO Regenerate
 fig = genfig_sim_psychometric_functions_profiles()
 save(projectdir("plots", "sim_psychometric_functions", "01_profiles.svg"), fig)
 
-# TODO update and regenerate eta/zeta once bluehive is done
+fig = genfig_sim_psychometric_functions_rate_curves("singlechannel")
+save(projectdir("plots", "sim_psychometric_functions", "02_rate_curves_singlechannel.svg"), fig)
+
+fig = genfig_sim_psychometric_functions_rate_curves("profilechannel")
+save(projectdir("plots", "sim_psychometric_functions", "03_rate_curves_profilechannel.svg"), fig)
+
+fig = genfig_sim_psychometric_functions_rate_curves("templatebased")
+save(projectdir("plots", "sim_psychometric_functions", "04_rate_curves_templatebased.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Figure 6 // sim_bowls
 # Modeling results overview figure
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-fig = genfig_sim_bowls_density_and_frequency_bowls()
+fig = genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
+fig = genfig_sim_bowls_density_and_frequency_bowls(; rove_size=10.0)
 save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls.svg"), fig)
+
+fig = genfig_sim_bowls_density_and_frequency_bowls_rove_effects()
+save(projectdir("plots", "sim_bowls", "s01_density_and_frequency_bowls.svg"), fig)

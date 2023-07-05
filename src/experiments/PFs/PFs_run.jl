@@ -6,4 +6,7 @@
     using Utilities
 end
 
-run(ProfileAnalysis_PFTemplateObserver())
+#run(ProfileAnalysis_PFTemplateObserver())
+run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
+#run(ProfileAnalysis_PFTemplateObserver_ControlConditions())
+

@@ -5,6 +5,7 @@ using DataFrames
 using DataFramesMeta
 using Chain
 using Statistics
+using UtilitiesViz
 
 # Get list of simulations and also list of which are complete
 experiment = ProfileAnalysis_PFTemplateObserver()
@@ -40,4 +41,4 @@ end
 
 # Compile
 fig = displayimg(tilecat(getimg.(figs)))
-save("\\home\\daniel\\cl_fig\\pahi\\2023-06-23_diagnosis.png", fig)
+save("\\home\\daniel\\cl_fig\\pahi\\2023-07-05_diagnosis.png", fig)
