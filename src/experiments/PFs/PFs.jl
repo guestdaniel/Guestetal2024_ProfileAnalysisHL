@@ -74,29 +74,7 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_HearingI
 
     # Configure other values
     increments=-30.0:2.5:5.0
-
-    # Load behavioral data and fetch list of unique subject IDs
-    subjs = unique(fetch_behavioral_data().subj)
-
-    # Load audiograms, grab only needed rows, and transform into Audiogram objects
-    if (Sys.KERNEL == :Linux)
-        audiograms = DataFrame(CSV.File("/home/dguest2/thresholds_2022-07-18.csv"))
-    else
-        audiograms = DataFrame(CSV.File("C:\\Users\\dguest2\\cl_data\\pahi\\raw\\thresholds_2022-07-18.csv"))
-    end
-    audiograms[audiograms.Subject .== "S98", :Subject] .= "S098"
-    audiograms = @subset(audiograms, in.(:Subject, Ref(subjs)))
-    audiograms = map(subjs) do subj
-        # Subset row
-        row = audiograms[audiograms.Subject .== subj, :]
-
-        # Select frequencies and thresholds
-        f = [250.0, 500.0, 1000.0, 1500.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0]
-        θ = Vector(row[1, 4:12])
-
-        # Combine into Audiogram objects
-        Audiogram(; freqs=f, thresholds=θ, species="human", desc=subj)
-    end
+    audiograms = fetch_audiograms()
 
     # Get simulations
     sims = map(Iterators.product(center_freqs, n_comps, rove_sizes, audiograms)) do (center_freq, n_comp, rove_size, audiogram)
@@ -285,12 +263,12 @@ end
 function getpffunc(mode, model, exp)
     if mode == "singlechannel"
         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-        pffunc = (args...) -> Utilities.setup(exp, args...; observer=obs)
+        pffunc = (args...; kwargs...) -> Utilities.setup(exp, args...; observer=obs, kwargs...)
     elseif mode == "profilechannel"
         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-        pffunc = (args...) -> Utilities.setup(exp, args...; observer=obs, preprocessor=pre_emphasize_profile)
+        pffunc = (args...; kwargs...) -> Utilities.setup(exp, args...; observer=obs, preprocessor=pre_emphasize_profile, kwargs...)
     elseif mode == "templatebased"
-        pffunc = (args...) -> Utilities.setup(exp, args...)
+        pffunc = (args...; kwargs...) -> Utilities.setup(exp, args...; kwargs...)
     end
     return pffunc
 end

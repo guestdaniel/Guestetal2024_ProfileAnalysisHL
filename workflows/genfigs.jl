@@ -64,9 +64,41 @@ save(projectdir("plots", "sim_psychometric_functions", "04_rate_curves_templateb
 # Figure 6 // sim_bowls
 # Modeling results overview figure
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Create main bowl figures
 fig = genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
+save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls_fixed_level.svg"), fig)
 fig = genfig_sim_bowls_density_and_frequency_bowls(; rove_size=10.0)
-save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls.svg"), fig)
+save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls_roved_level.svg"), fig)
 
+# Create bowl figure showing data as function of modulation frequency, possible supplemental
+# figure or alternative version of main bowls
+fig = genfig_sim_bowls_gmmf(; rove_size=10.0)
+save(projectdir("plots", "sim_bowls", "s01_gmmf_bowls_roved_level.svg"), fig)
+
+# Spot check suspicious conditions (e.g., roved LSR 1 kHz data)
+plot_histograms_versus_increment_sound_level_control(
+    summon_pf(; 
+        center_freq=1000.0,
+        n_comp=21,
+        mode="singlechannel",
+        rove_size=10.0,
+        model=2,
+    )
+)
+
+# Rove effect figure (possible supplemental figure)
 fig = genfig_sim_bowls_density_and_frequency_bowls_rove_effects()
 save(projectdir("plots", "sim_bowls", "s01_density_and_frequency_bowls.svg"), fig)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Figure 7 // sim_hi
+# Hearing-impaired simulations figure
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fig = genfig_audiograms_and_cohc()
+save(projectdir("plots", "sim_hi", "01_audiograms_and_cohc_cihc.svg"), fig)
+
+fig = __genfig_sim_hi_cohc_correlations()
+save(projectdir("plots", "sim_hi", "s01_hi_sim_cohc_correlations.svg"), fig)
+
+fig = __genfig_sim_hi_behavior_correlations()
+save(projectdir("plots", "sim_hi", "s02_hi_sim_correlations.svg"), fig)

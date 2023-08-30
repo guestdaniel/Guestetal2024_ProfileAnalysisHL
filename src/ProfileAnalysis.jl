@@ -45,6 +45,7 @@ include(joinpath("figures", "fig_beh_hearing_loss.jl"))
 include(joinpath("figures", "fig_sim_methods.jl"))
 include(joinpath("figures", "fig_sim_psychometric_functions.jl"))
 include(joinpath("figures", "fig_sim_bowls.jl"))
+include(joinpath("figures", "fig_sim_hi.jl"))
 
 # Constants
 const C_path_models = "C:\\home\\daniel\\cl_sim\\pahi"

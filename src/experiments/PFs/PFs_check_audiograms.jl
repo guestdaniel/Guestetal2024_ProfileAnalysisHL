@@ -4,6 +4,7 @@ using Utilities
 using AuditorySignalUtils
 
 # Load audiograms, grab only needed rows, and transform into Audiogram objects
+subjs = unique(fetch_behavioral_data().subj
 audiograms = DataFrame(CSV.File("C:\\Users\\dguest2\\cl_data\\pahi\\raw\\thresholds_2022-07-18.csv"))
 audiograms[audiograms.Subject .== "S98", :Subject] .= "S098"
 audiograms = @subset(audiograms, in.(:Subject, Ref(subjs)))

@@ -1,7 +1,7 @@
 export logistic, logistic_fit, logistic_predict, hearing_group, hl_offsets,
     hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function, modelstr,
     variance_explained, get_hl_colors, color_group, fetch_behavioral_data,
-    avg_behavioral_data
+    avg_behavioral_data, fetch_audiograms, quickfitlm
 
 """
     logistic(x, λ; L, offset)
@@ -123,7 +123,7 @@ function color_group(group::Int)
 end
 
 # Function to map from group name to corresponding group color
-function color_group(group::String) 
+function color_group(group::AbstractString) 
     hl_colors = get_hl_colors()
     if group == "< 5 dB HL"
         hl_colors[1]
@@ -134,10 +134,52 @@ function color_group(group::String)
     end
 end
 
+# Function to map from threshold to corresponding color 
+function color_group(group::Float64)
+    hl_colors = get_hl_colors()
+    if group < 5
+        hl_colors[1]
+    elseif (group >= 5) & (group <= 15)
+        hl_colors[2]
+    else
+        hl_colors[3]
+    end
+end
+
 # Function to fetch behavioral data
 function fetch_behavioral_data()
     # Load in data
     DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
+end
+
+# Function to fetch audiograms
+function fetch_audiograms()
+    # Load behavioral data and fetch list of unique subject IDs
+    subjs = unique(fetch_behavioral_data().subj)
+
+    # Load audiograms
+    if (Sys.KERNEL == :Linux)
+        audiograms = DataFrame(CSV.File("/home/dguest2/thresholds_2022-07-18.csv"))
+    else
+        audiograms = DataFrame(CSV.File("C:\\Users\\dguest2\\cl_data\\pahi\\raw\\thresholds_2022-07-18.csv"))
+    end
+    audiograms[audiograms.Subject .== "S98", :Subject] .= "S098"
+
+    # Select only rows matching subjects we actually have PA data for
+    audiograms = @subset(audiograms, in.(:Subject, Ref(subjs)))
+
+    # Map through subjects and convert audiogram data into Audiogram object
+    map(subjs) do subj
+        # Subset row
+        row = audiograms[audiograms.Subject .== subj, :]
+
+        # Select frequencies and thresholds
+        f = [250.0, 500.0, 1000.0, 1500.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0]
+        θ = Vector(row[1, 4:12])
+
+        # Combine into Audiogram objects
+        Audiogram(; freqs=f, thresholds=θ, species="human", desc=subj)
+    end
 end
 
 # Function to compute averages and standard errors in behavioral data
@@ -153,4 +195,13 @@ function avg_behavioral_data(df)
             :threshold = mean(:threshold),
         )
     end
+end
+
+# Function to quickfit LM to dB SRS data
+function quickfitlm(x, y)
+    m = lm(hcat(ones(size(x)), x), y)
+    b, m = coef(m)
+    x̂ = LinRange(-30.0, 5.0, 1000)
+    ŷ = m .* x̂ .+ b
+    return x̂, ŷ
 end

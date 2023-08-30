@@ -1,4 +1,5 @@
 export genfig_sim_bowls_density_and_frequency_bowls,
+       genfig_sim_bowls_gmmf,
        genfig_sim_bowls_density_and_frequency_bowls_rove_effects,
        genfig_sim_bowls_summary
 
@@ -703,6 +704,89 @@ function genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
     # Return
     fig
 end
+
+function gmmf(center_freq, n_comp)
+    # Calculate component frequencies
+    freqs = LogRange(center_freq/5, center_freq*5, n_comp)
+    idx_center = Int(ceil(n_comp/2)) 
+    mf1 = freqs[idx_center] - freqs[idx_center-1]
+    mf2 = freqs[idx_center+1] - freqs[idx_center]
+    sqrt(mf1 * mf2)
+end
+
+function pick_marker(freq)
+    @match freq begin
+        500.0 => :circle
+        1000.0 => :rect
+        2000.0 => :diamond
+        4000.0 => :pentagon
+    end
+end
+
+function genfig_sim_bowls_gmmf(; rove_size=0.001)
+    # Get full dataframe
+    df = @chain load_simulated_thresholds_adjusted() begin  
+        @subset(:rove_size .== rove_size)
+    end
+
+    # Compile relevant behavioral data
+    beh = @chain fetch_behavioral_data() begin
+        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+        avg_behavioral_data()
+    end
+
+    # Set up figure
+    set_theme!(theme_carney)
+    fig = Figure(; resolution=(700, 700))
+    axs = [Axis(fig[i, j]; xscale=log10, xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:3]
+
+    # Loop over all combinations of mode and model
+    itr = collect(Iterators.product(unique(df.model), unique(df.mode)))
+    map(zip(itr, axs)) do ((model, mode), ax)
+        # Subset data
+        df_subset = @subset(df, :model .== model, :mode .== mode)
+
+        # Transform into gmff units
+        df_subset = @transform(df_subset, :gmmf = gmmf.(:center_freq, :n_comp))
+        behs = @transform(beh, :gmmf = gmmf.(Float64.(:freq), :n_comp))
+
+        # Subset further
+        sims_adj = @subset(df_subset, :adjusted .== false)
+
+        # Add scatters and lines for: unadjusted thresholds (pink), adjusted thresholds
+        # (red), and behavioral thresholds (black)
+        for center_freq in [500.0, 1000.0, 2000.0, 4000.0]
+            # Plot behavioral data in black
+            temp = @subset(behs, :freq .== center_freq)
+            lines!(ax, temp.gmmf, temp.threshold; color=:black)
+            scatter!(ax, temp.gmmf, temp.threshold; color=:black, marker=pick_marker(center_freq), markersize=10.0, label=string(center_freq))
+            temp = @subset(sims_adj, :center_freq .== center_freq)
+            lines!(ax, temp.gmmf, temp.θ; color=:red)
+            scatter!(ax, temp.gmmf, temp.θ; color=:red, marker=pick_marker(center_freq), markersize=10.0)
+        end
+
+        # Set limits
+        ylims!(ax, -35.0, 10.0)
+        ax.yticks = -30.0:10.0:10.0
+        ax.xticks = 2.0 .^ (0.0:1.0:11.0)
+    end
+    
+    # Add labels
+    Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2); colgap!(fig.layout, 1, Relative(0.01));
+    Label(fig[4, 1:3], "Average modulation rate (Hz)"); rowgap!(fig.layout, 3, Relative(0.05));
+    fig[2, 4] = Legend(fig, axs[end])
+
+    # Adjust colgaps and neaten grid
+    neaten_grid!(axs)
+    colgap!(fig.layout, 2, Relative(0.01))
+    colgap!(fig.layout, 3, Relative(0.01))
+    rowgap!(fig.layout, 1, Relative(0.01))
+    rowgap!(fig.layout, 2, Relative(0.01))
+
+    # Return
+    fig
+end
+
 
 """
     genfig_sim_bowls_summary()
