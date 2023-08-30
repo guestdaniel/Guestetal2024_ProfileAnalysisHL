@@ -5,33 +5,31 @@
 # Files and paths
 ## Behavioral data
 Behavioral data are stored in the `data` folder.
-Processed internal data is stored in `data\int_pro`.
-The behavioral data are available in tidy format in a `.csv` file at `data\int_pro\data_postproc.csv`.
+Processed internal data is stored in `data/int_pro`.
+The behavioral data are available in tidy format in a `.csv` file at `data/int_pro/data_postproc.csv`.
 This file has the following columns:
 
 Some processed *external* data are also available (from other studies of profile analyis, mostly Green lab work from the 80s/90s).
-These are available in tidy format in a `.csv` file at `data\ext_pro\paper_fig.csv`, where paper is in `[Green1985, Bernstein1987, Lentz1999]` and figure is in `[Fig2, Fig3, Fig4]`. 
+These are available in tidy format in a `.csv` file at `data/ext_pro/paper_fig.csv`, where paper is in `[Green1985, Bernstein1987, Lentz1999]` and figure is in `[Fig2, Fig3, Fig4]`. 
 These files have the following columns:
 
 ## Path structure
 ```
 .  
 ├── data                     # Behavioral data (internal and external) lives here
-├── scripts                  # [[TODO --- deprecate]] 
-├── plots                    # Intermediate figure files and master figure .svg files
+├── plots                    # Intermediate figure files, primary figure .svg files, etc.
 ├── src                      # Primary source directory
-│   ├── experiments          # Code for implementing and running various simulated experiments
-│   ├── figures              # Code for compiling simulated results into figures
+│   ├── experiments          # Private code for implementing and running various simulated experiments
+│   ├── figures              # Private code for compiling simulated results into figures
 │   └── ProfileAnalysis.jl   # Primary source file
-├── test                     # Contains some scripts for sanity checking code in this repository
 ├── workflows                # Folder containing various "workflows" (sequences of scripts)
-│   ├── behavioral_data      # Workflow for collecting, cleaning, compiling behavioral data
-│   ├── simulations          # Workflow for running simulated experiments
+│   ├── behavioral_data      # Public scripts for wrangling, plotting, and analyzing behavioral data
+│   ├── simulations          # Public scripts for running simulated experiments
 │   └── genfigs.jl           # Script for generating paper figures
 ├── docs.md                  # Documentation file for the entire repository
-├── cfg.R                    # [[TODO --- deprecate]] Short script to provide constants/configs shared across all R files
+├── cfg.R                    # Short script to provide constants/configs shared across all R files
 ├── LICENSE                  # License file for the code contained in this repository
-├── LICENSE_data             # [[TODO --- add]] License file for the behavioral data contained in this repository
+├── LICENSE_data             # [[TODO]] License file for the behavioral data contained in this repository
 └── Project.toml             # Julia environment management file
 ```
 
@@ -65,13 +63,36 @@ Finally, we analyze the fitted threshold data as well as subject data (e.g., aud
 Parameters were selected by hand to provide balanced responses to modulated noise and profile-analysis stimuli (i.e., a balance between good MTFs and good sustained resposnes to profile-analysis stimuli).
 Selected parameters are available in `src\experiments\parameter_sets.jl`.
 
-### Generating simulations
-Simulations are built and run by source code in `src/experiments`.
-The following commands can run all of the necessary simulations:
+### Generating and examining simulations
+Simulations are organized around concrete subtypes of `ProfileAnalysisExperiment`.
+There are several available, each of which handle a subset of the total necessary simulations for the paper:
+- `ProfileAnalysis_PFTemplateObserver`: Majority of NH simulations in paper
+- `ProfileAnalysis_PFTemplateObserver_HearingImpaired`: Majority of HI simulations in paper
+- `ProfileAnalysis_PFTemplateObserver_WidebandControl`: Small control simulations for testing off-CF effects
+- `ProfileAnalysis_PFTemplateObserver_PureToneControl`: Small control simulations for testing contributions of suppression
+
+The following commands can be used to work with these types, assuming that the associated `Utilities` package is also loaded.
 ```
-run(ProfileAnalysis_PFTemplateObserver())     # simulate psychometric functions
-run(ProfileAnalysis_PFTemplateObserverHL())   # simulate subset of psychometric functions w/ HI
-run(ProfileAnalysis_PFObserver())             # todo --- add!
-run(ProfileAnalysis_PFObserverHL())           # todo --- add!
-run(... ??? how do patterns?)
+setup(exp)        # fetch all simulation objects, but don't run them 
+status(exp)       # check which simulations are cached on file and which are not
+run(exp)          # run all simulations
 ```
+
+If one sets `sims = setup(exp)`, the following operations are useful:
+```
+id.(sims)         # fetch all simulation IDs
+cachepath.(sims)  # fetch all simulation cache paths, assuming standard Config
+```
+
+Note that we have only discussed the "template-based" simulations! This is because we only
+worry about generating and running the template-based simulations --- the other
+"template-free" simulations are simply re-analysis of the data generated by the
+template-based simulations, implemented via the disk-memoized caching system provided by
+`Utilities`. 
+
+### Running simulations
+Simulations can be run as above using `run(exp)`, but practically we rarely do this directly.
+Instead, we first set up an environment on BlueHive and then run the simulations in a batch mode.
+This is achieved by submitting `PFs_run.sh` using `sbatch`. 
+This script uses ~30 worker processes for long stretches of time to run `PFs_run.jl`, a script that sets up each worker process' environemnt and simulates each of the above experiments.
+The results of this process can be downloaded to local machies using the Julia function `synchronize_cache`.

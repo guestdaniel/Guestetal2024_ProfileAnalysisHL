@@ -2,18 +2,36 @@
 # subtype for generating psychometric function objects for profile-analysis experiments
 
 # Handle exports
-export ProfileAnalysis_PF, ProfileAnalysis_PFTemplateObserver, ProfileAnalysis_PFObserver,
+export ProfileAnalysis_PF, 
+       ProfileAnalysis_PFTemplateObserver, 
+       ProfileAnalysis_PFObserver,
        ProfileAnalysis_PFTemplateObserver_HearingImpaired,
+       ProfileAnalysis_PFTemplateObserver_PureToneControl,
+       ProfileAnalysis_PFTemplateObserver_WidebandControl,
        obs_dec_rate_at_tf, obs_inc_rate_at_tf, pre_emphasize_profile, getpffunc
 
 # Declare experiment types
 abstract type ProfileAnalysis_PF <: ProfileAnalysisExperiment end
 struct ProfileAnalysis_PFTemplateObserver <: ProfileAnalysis_PF end
-struct ProfileAnalysis_PFTemplateObserver_ControlConditions <: ProfileAnalysis_PF end
+struct ProfileAnalysis_PFTemplateObserver_PureToneControl <: ProfileAnalysis_PF end
+struct ProfileAnalysis_PFTemplateObserver_WidebandControl <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFTemplateObserver_HearingImpaired <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFObserver <: ProfileAnalysis_PF end
 
-# Declare setup function to set up entire experiment for batch run
+"""
+    setup(::ProfileAnalysis_PFTemplateObserver)
+
+Set up all template-based psychometric function simulations.
+
+Set up all template-based psychometric function simulations, over the full range of
+simulated parameter values:
+    - Center frequencies of 0.5-4 kHz
+    - Component counts from 5-37
+    - Rove sizes from 0.001 (nominal 0) to 10 dB
+    - Increments from -45 to 5 dB SRS
+
+Returns a vector of simulation objects that can be evaluted with `simulate`.
+"""
 function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
@@ -37,10 +55,69 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
     vcat(sims...)
 end
 
-# Declare setup functon to set up control conditions for batch run. This control experiment
-# tests the 5-component condition with a larger frequency range [2^-2.5, 2^2.5] to capture
-# the full ~4.6 octave bandwidth around the target frequency
-function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_ControlConditions)
+"""
+    setup(::ProfileAnalysis_PFTemplateObserver_PureToneControl)
+
+Set up pure-tone control template-based psychometric function simulations.
+
+Set up all template-based psychometric function simulations where we simulate pure-tone
+responses instead of profile-analysis stimuli. We do this over the following parameter
+ranges: 
+    - Center frequencies of 0.5-4 kHz 
+    - Rove sizes from 0.001 (nominal 0) to 10 dB 
+    - Increments from -45 to 5 dB SRS
+
+The use of pure tones is a handy control for evaluating the overall consequences of having
+flanker tones in the stimulus (including, most relevantly, possible contributions of
+two-tone suppression and similar phenomena).
+
+Returns a vector of simulation objects that can be evaluted with `simulate`.
+"""
+function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_PureToneControl)
+    # Choose superexperiment (should be handled with subtyping but oh well)
+    supexp = ProfileAnalysis_PFTemplateObserver()
+
+    # Choose frequencies, component counts, and rove sizes to loop over
+    center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
+    n_comps = [1]
+    rove_sizes = [0.001, 10.0]
+
+    # Configure other values
+    increments=vcat(-999.9, -45.0:2.5:5.0)
+
+    # Get simulations
+    sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
+        # Get possible models
+        models = Utilities.setup(experiment, center_freq)
+
+        # Loop over models and assemble PFs
+        map(models) do model
+            Utilities.setup(supexp, model, increments, center_freq, n_comp, rove_size)
+        end
+    end
+
+    vcat(sims...)
+end
+
+
+"""
+    setup(::ProfileAnalysis_PFTemplateObserver_WidebandControl)
+
+Set up template-based psychometric function wideband control simulations.
+
+Set up control simulations for template-based psychometric functions. This control
+simulation spans a wider frequency range of (2^-2.5, 2^2.5) octaves around the center
+frequency, rather than the normal more limited range of (1/2, 2) times the center frequency.
+Currently, this function only generates a reduced range of simulations over the parameter
+values of:
+    - Center frequencies of 0.5-4 kHz
+    - [!!!] Component count of 5
+    - Rove sizes from 0.001 (nominal 0) to 10 dB
+    - Increments from -45 to 5 dB SRS
+
+Returns a vector of simulation objects that can be evaluted with `simulate`.
+"""
+function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_WidebandControl)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
     n_comps = [5]
@@ -63,13 +140,28 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_ControlC
     vcat(sims...)
 end
 
-# Declare setup functon to setup hearing impaired simulations
+"""
+    setup(::ProfileAnalysis_PFTemplateObserver_HearingImpaired)
+
+Set up template-based psychometric function hearing-impaired simulations.
+
+Set up simulations for template-based psychometric functions with hearing loss. Subject
+audiograms are gathered, and a model + set of PFs is generated for each. Otherwise,
+simulations are generated for the following parameter ranges: 
+    - [!!!] Center frequencies of 1 and 2 kHz (behaviorally relevant ranges)
+    - Component counts from 5-37
+    - [!!!] Rove size of from 0.001 (nominal 0) dB SRS
+    - Increments from -45 to 5 dB SRS
+
+Note that these simulations are generated with the "reduced" model/sim parameter values to 
+make each faster to simulate (lower numbers of reps, smaller increment range, fewer CFs, etc.)
+
+Returns a vector of simulation objects that can be evaluted with `simulate`.
+"""
 function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_HearingImpaired)
     # Choose frequencies, component counts, and rove sizes to loop over
-#    center_freqs = [1000.0, 2000.0, 4000.0]
     center_freqs = [1000.0, 2000.0]
     n_comps = [5, 13, 21, 29, 37]
-#    rove_sizes = [0.001, 10.0]
     rove_sizes = [0.001]
 
     # Configure other values
@@ -99,7 +191,14 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_HearingI
     vcat(vcat(sims...)...)
 end
 
-# Declare setup function to return PF for combination of model, increments, center_freq, and n_comp
+"""
+    setup(::ProfileAnalysis_PFTemplateObserver, model, increments, center_freq, n_comp, rove_size)
+
+Set up a psychometric function simulation object for specified model/params.
+
+Creates AvgPatterns to simulate reference and target responses and bundles them into a PF
+object for simulation. This variant specifically uses a template-based observer.
+"""
 function Utilities.setup(
     ::ProfileAnalysis_PFTemplateObserver, 
     model::Model, 
@@ -159,7 +258,14 @@ function Utilities.setup(
     sim
 end
 
-# Declare setup function to return PF for combination of model, increments, center_freq, and n_comp
+"""
+    setup(::ProfileAnalysis_PFObserver, model, increments, center_freq, n_comp, rove_size)
+
+Set up a psychometric function simulation object for specified model/params.
+
+Creates AvgPatterns to simulate reference and target responses and bundles them into a PF
+object for simulation. This variant specifically uses a template-free observer.
+"""
 function Utilities.setup(
     ::ProfileAnalysis_PFObserver, 
     model::Model, 

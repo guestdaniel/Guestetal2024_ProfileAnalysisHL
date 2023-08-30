@@ -6,7 +6,14 @@
     using Utilities
 end
 
+# Run main simulations
 #run(ProfileAnalysis_PFTemplateObserver())
-run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
-#run(ProfileAnalysis_PFTemplateObserver_ControlConditions())
 
+# Run hearing-impaired simulations 
+#run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
+
+# Run wideband control simulations
+#run(ProfileAnalysis_PFTemplateObserver_WidebandControl())
+
+# Run pure-tone control conditions
+run(ProfileAnalysis_PFTemplateObserver_PureToneControl())

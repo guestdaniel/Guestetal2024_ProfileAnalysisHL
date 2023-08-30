@@ -137,7 +137,7 @@ used in the behavioral PAHI experiments.
     # Stimulus parameters
     center_freq::Float64=1000.0
     n_comp::Int64=5
-    freqs::Vector{Float64}=LogRange(center_freq * (1/5), center_freq * 5, n_comp)
+    freqs::Vector{Float64}=n_comp == 1 ? [center_freq] : LogRange(center_freq * (1/5), center_freq * 5, n_comp)
     target_comp::Int64=Int(ceil(length(freqs)/2))
     increment::Float64=0.0
     pedestal_level::Float64=70.0
