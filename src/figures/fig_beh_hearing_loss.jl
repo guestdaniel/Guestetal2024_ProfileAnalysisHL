@@ -1,5 +1,16 @@
-export genfig_beh_hearing_loss
+export genfig_beh_hearing_loss  # Figure 3
 
+"""
+    genfig_beh_hearing_loss()
+
+Plot correlations between degree of hearing loss and profile-analysis thresholds
+
+Plotted correlations between degree of hearing loss (quantified by audiometric threshold at
+frequency corresponding to target frequency) and fixed-level profile-analysis thresholds in
+each tested condition. Includes a demarcation of degrees of hearing loss for which we might
+expect some part of the stimulus to be inaudible (because per-component level falls below
+audiometric thresholds) and linear trend lines. Is Figure 3.
+"""
 function genfig_beh_hearing_loss()
     # Write mini function to fit lm to data and return interpolated fits
     function fit_lm(df)
@@ -69,8 +80,6 @@ function genfig_beh_hearing_loss()
                 lines!(axs[idx_n_comp, idx_freq], x̂, ŷ; color=:black, linestyle=:dash)
             else
                 lines!(axs[idx_n_comp, idx_freq], x̂, ŷ; color=:black, linestyle=:solid)
-    #            x̂, ŷ = fit_lm(sub[sub.hl .> 0.0, :])
-    #            lines!(axs[idx_n_comp, idx_freq], x̂, ŷ; color=:gray, linestyle=:solid, linewidth=1.0)
             end
         end
     end
