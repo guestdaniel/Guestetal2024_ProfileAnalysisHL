@@ -76,6 +76,9 @@ save(projectdir("plots", "sim_methods", "05_example_responses.svg"), fig)
 # Shows "delta" / increment responses for each model on top, and deltas / distances for 
 # each observer strategy and model stage + example psychometric functions for each observer 
 # strategy and model stage on bottom
+# 
+# TODO:
+# - Add docstrings to functions, clean up
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Generate population responses to a level increment
 fig = genfig_sim_psychometric_functions_profiles()
