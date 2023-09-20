@@ -1,6 +1,16 @@
-export genfig_beh_frequency_psychometric_functions,
-       genfig_beh_frequency_bowls
+export genfig_beh_frequency_psychometric_functions,  # Figure 2A
+       genfig_beh_frequency_bowls                    # Figure 2B
 
+"""
+    genfig_beh_frequency_psychometric_functions()
+
+Plot psychometric functions for fixed-level data in every condition and HL group
+
+Plots group-average psychometric functions for each HL group in every fixed-level conditions
+(i.e., all combinations of target frequency and component count). Thresholds are indicated 
+with small markers below the curves. This figure is placed in the left-hand side of Figure 
+2.
+"""
 function genfig_beh_frequency_psychometric_functions()
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "data_postproc.csv")))
@@ -92,7 +102,7 @@ function genfig_beh_frequency_psychometric_functions()
                 errorbars!(axs[idx_n_comp, idx_freq], mean_sub.increment, mean_sub.μ, 1.96 .* mean_sub.stderr; color=color_group(group))
                 scatter!(axs[idx_n_comp, idx_freq], mean_sub.increment, mean_sub.μ; color=color_group(group))
 
-                # Handle plotting thresholds at arbitrary offset separately
+                # Plot thresholds as small markers below curves
                 offset = 0.30 + (idx_group-1)*0.05
                 fitted_sub = @subset(df_fitted, :n_comp .== n_comp, :freq .== freq, :hl_group .== group)
                 scatter!(axs[idx_n_comp, idx_freq], fitted_sub.threshold, [offset]; marker=:circle, color=color_group(group))
@@ -115,6 +125,15 @@ function genfig_beh_frequency_psychometric_functions()
     fig
 end
 
+"""
+    genfig_beh_frequency_bowls()
+
+Plot thresholds as a function of target frequency for fixed-level data in each HL group
+
+Plots group-average thresholds each HL group as a function of target frequency, faceted
+into different rows for each component-count condition. This figure is placed in the 
+right-hand side of Figure 2.
+"""
 function genfig_beh_frequency_bowls()
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
