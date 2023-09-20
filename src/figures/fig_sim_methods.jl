@@ -1,12 +1,18 @@
-export genfig_sim_methods_rlfs,
-       genfig_sim_methods_tcs,
-       genfig_sim_methods_mtfs,
-       genfig_sim_methods_example_responses
+export genfig_sim_methods_rlfs,              # Figure 4B, row #1
+       genfig_sim_methods_tcs,               # Figure 4B, row #2
+       genfig_sim_methods_mtfs,              # Figure 4B, row #3
+       genfig_sim_methods_example_responses  # Figure 4B, row #4
 
 """
     genfig_sim_methods_rlfs()
 
 Plot rate-level functions for each tested auditory model
+
+Simulate and plot rate-level functions for HSR/LSR/BE/BS models at a nominal CF of 2 kHz. 
+Demarcates the sound level corresponding to the per-component level of a 21-component 
+profile-analysis stimulus presented at an overll level of 70 dB SPL. Is a subfigure in the 
+left-hand side of Figure 4. Uses free y-axes to accomodate wide variation in discharge rate 
+between models.
 """
 function genfig_sim_methods_rlfs()
     # Set theme and other visual features
@@ -31,6 +37,11 @@ function genfig_sim_methods_rlfs()
     fig
 end
 
+"""
+    plot_model_rlf!(ax, cf=2000.0, fiber_type="high")
+
+Simulate and plot-in-place rate-level function for AN model with specified parameters
+"""
 function plot_model_rlf!(ax, cf=2000.0, fiber_type::String="high")
     # Handle model
     model = AuditoryNerveZBC2014(; fiber_type=fiber_type, fractional=false, cf=[cf])
@@ -46,6 +57,11 @@ function plot_model_rlf!(ax, cf=2000.0, fiber_type::String="high")
     ax 
 end
 
+"""
+    plot_model_rlf!(ax, modeltype=InferiorColliculusSFIEBE, param=StandardBE)
+
+Simulate and plot-in-place rate-level function for IC model with specified parameters
+"""
 function plot_model_rlf!(ax, cf=2000.0, modeltype::DataType=InferiorColliculusSFIEBE, param::Dict=StandardBE)
     # Handle model
     frontend = AuditoryNerveZBC2014(; fiber_type="high", fractional=false, cf=[cf])
@@ -66,6 +82,10 @@ end
     genfig_sim_methods_tcs()
 
 Plot iso-level tuning curves for each tested auditory model
+
+Simulate and plot iso-level tuning curves for HSR/LSR/BE/BS models at a nominal CF of 2 kHz. 
+Uses a sound level of 30 dB SPL. Is a subfigure of Figure 4. Uses free y-axes to accomodate 
+wide variation in discharge rate between models.
 """
 function genfig_sim_methods_tcs()
     set_theme!(theme_carney; fontsize=10.0, Scatter=(markersize=3.0, ))
@@ -88,6 +108,11 @@ function genfig_sim_methods_tcs()
     fig
 end
 
+"""
+    plot_model_tc!(ax, cf=2000.0, fiber_type="high")
+
+Simulate and plot-in-place iso-level tuning curve for AN model with specified parameters
+"""
 function plot_model_tc!(ax, cf=2000.0, fiber_type::String="high")
     # Handle model
     model = AuditoryNerveZBC2014(; fiber_type=fiber_type, fractional=false, cf=[cf])
@@ -103,6 +128,11 @@ function plot_model_tc!(ax, cf=2000.0, fiber_type::String="high")
     ax 
 end
 
+"""
+    plot_model_tc!(ax, modeltype=InferiorColliculusSFIEBE, param=StandardBE)
+
+Simulate and plot-in-place iso-level tuning curve for IC model with specified parameters
+"""
 function plot_model_tc!(ax, cf=2000.0, modeltype::DataType=InferiorColliculusSFIEBE, param::Dict=StandardBE)
     # Handle model
     frontend = AuditoryNerveZBC2014(; fiber_type="high", fractional=false, cf=[cf])
@@ -122,7 +152,12 @@ end
 """
     genfig_sim_methods_mtfs()
 
-Plot noise MTFs for each tested auditory model
+Plot noise modulation transfer functions (MTFs) for each tested auditory model
+
+Simulate and plot MTFs for HSR/LSR/BE/BS models at a nominal CF of 2 kHz using Guassian
+noise modulated at a modulation depth of 0 dB using a sinusoidal modulator. Sound level of 
+the noise is in dB SPL spectrum level and is 20 dB SPL. Is a subfigure of Figure 4. 
+Uses free y-axes to accomodate wide variation in discharge rate between models.
 """
 function genfig_sim_methods_mtfs()
     # Set theme and other visual features
@@ -146,6 +181,11 @@ function genfig_sim_methods_mtfs()
     fig
 end
 
+"""
+    plot_model_mtf!(ax, cf=2000.0, fiber_type="high")
+
+Simulate and plot-in-place noise MTFs for AN model with specified parameters
+"""
 function plot_model_mtf!(ax, cf=2000.0, fiber_type::String="high")
     # Handle model
     model = AuditoryNerveZBC2014(; fiber_type=fiber_type, fractional=false, cf=[cf])
@@ -160,6 +200,11 @@ function plot_model_mtf!(ax, cf=2000.0, fiber_type::String="high")
     ax 
 end
 
+"""
+    plot_model_mtf!(ax, modeltype=InferiorColliculusSFIEBE, param=StandardBE)
+
+Simulate and plot-in-place noise MTFs for IC model with specified parameters
+"""
 function plot_model_mtf!(ax, cf=2000.0, modeltype::DataType=InferiorColliculusSFIEBE, param::Dict=StandardBE)
     # Handle model
     frontend = AuditoryNerveZBC2014(; fiber_type="high", fractional=false, cf=[cf])
@@ -176,9 +221,14 @@ function plot_model_mtf!(ax, cf=2000.0, modeltype::DataType=InferiorColliculusSF
 end
 
 """
-    genfig_sim_methods_example_responses
+    genfig_sim_methods_example_responses()
 
-Plot example responses for a profile-analysis tone for each tested auditory model
+Plot example profile-analysis token response for each tested auditory model
+
+Simulate and plot average population response for HSR/LSR/BE/BS models across a range of CFs
+to a 21-component 2-kHz profile-analysis tone with an increment of -10 dB SRS. A reference
+response is plotted in black, while a target response is plotted in red. Is a subfigure of
+Figure 4. Uses free y-axes to accomodate wide variation in discharge rate between models.
 """
 function genfig_sim_methods_example_responses()
     # Set up plot
@@ -202,17 +252,32 @@ function genfig_sim_methods_example_responses()
     fig
 end
 
+"""
+    example_prep_model(fiber_type, center_freq)
+
+Prepare a Model object for an AN model with the specified parameters
+"""
 function example_prep_model(fiber_type::String; center_freq=1000.0)
     model = AuditoryNerveZBC2014(; fiber_type=fiber_type, cf=LogRange(center_freq/2, center_freq*2, 91), fractional=false)
     return model
 end
 
+"""
+    example_prep_model(modeltype, params)
+
+Prepare a Model object for an IC model with the specified parameters
+"""
 function example_prep_model(modeltype::DataType, params::Dict; center_freq=1000.0)
     frontend = AuditoryNerveZBC2014(; cf=LogRange(center_freq/2, center_freq*2, 91), fractional=false)
     model = modeltype(; frontend=frontend, params...)
     return model
 end
 
+"""
+    example_prep_sims(modeltype, params)
+
+Prepare and evaluate simulation objects that perform the simulations described above
+"""
 function example_prep_sims(increment, args...; center_freq=1000.0, n_comp=21)
     # Get model
     model = example_prep_model(args...; center_freq=center_freq)
@@ -232,6 +297,11 @@ function example_prep_sims(increment, args...; center_freq=1000.0, n_comp=21)
     log2.(model.cf ./ center_freq), map(mean, out_ref), map(mean, out_tar)
 end
 
+"""
+    example_plot_pair!(ax, cf, r, t)
+
+Plot in-place two population average-rate curves (r and t)
+"""
 function example_plot_pair!(ax, cf, r, t; color=:black)
     lines!(ax, cf, r; color=color)
     lines!(ax, cf, t; color=:red)
