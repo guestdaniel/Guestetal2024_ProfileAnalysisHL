@@ -11,6 +11,7 @@ using DataFrames
 using DataFramesMeta
 using Distributed
 using Distributions
+using HypothesisTests
 using DrWatson
 using LsqFit
 using Parameters

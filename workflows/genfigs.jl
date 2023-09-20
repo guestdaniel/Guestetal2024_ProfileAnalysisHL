@@ -69,6 +69,17 @@ fig = genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
 save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls_fixed_level.svg"), fig)
 fig = genfig_sim_bowls_density_and_frequency_bowls(; rove_size=10.0)
 save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls_roved_level.svg"), fig)
+fig = genfig_sim_bowls_density_and_frequency_bowls_simple()
+save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls_simple.svg"), fig)
+
+# Create summary showing patterns w.r.t. frequency for NH versus model
+fig = genfig_sim_bowls_frequency_summary()
+save(projectdir("plots", "sim_bowls", "02_density_and_frequency_summary.svg"), fig)
+
+# Create summary showing correlations between model and simulated responses
+fig = genfig_sim_bowls_modelbehavior_correlations()
+save(projectdir("plots", "sim_bowls", "03_density_and_modelbehavior_correlations.svg"), fig)
+
 
 # Create bowl figure showing data as function of modulation frequency, possible supplemental
 # figure or alternative version of main bowls
@@ -89,6 +100,25 @@ plot_histograms_versus_increment_sound_level_control(
 # Rove effect figure (possible supplemental figure)
 fig = genfig_sim_bowls_density_and_frequency_bowls_rove_effects()
 save(projectdir("plots", "sim_bowls", "s01_density_and_frequency_bowls.svg"), fig)
+
+# LSR pure-tone control figure (possible supplemental figure)
+fig = genfig_sim_bowls_puretonecontrol_LSR_only()
+save(projectdir("plots", "sim_bowls", "s02_pure_tone_control.svg"), fig)
+
+# LSR pure-tone control followup stackplots
+fig = genfig_followup_puretonecontrol()
+save(projectdir("plots", "sim_bowls", "s02_pure_tone_control_stackplots.svg"), fig)
+
+# fig = genfig_followup_puretonecontrol_no_cochlear_gain()
+# save(projectdir("plots", "sim_bowls", "s02_pure_tone_control_stackplots_no_cochlear_gain.svg"), fig)
+
+# LSR pure-tone control mechanism followup
+fig = genfig_puretonecontrol_mechanism()
+save(projectdir("plots", "sim_bowls", "s02_pure_tone_control_flankers.svg"), fig)
+
+# LSR pure-tone control RL function followup
+fig = genfig_puretonecontrol_rl_functions()
+save(projectdir("plots", "sim_bowls", "s02_pure_tone_control_rl_functions.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Figure 7 // sim_hi

@@ -1,10 +1,12 @@
 export summon_pf,
        postprocess_pfs, 
        postprocess_pfs_hi,
+       postprocess_pfs_puretone,
        compare_behavior_to_simulations,
        load_simulated_thresholds,
        load_simulated_thresholds_hi,
        load_simulated_thresholds_adjusted,
+       load_simulated_thresholds_puretone,
        plot_histograms_versus_increment_sound_level_control
 
 function summon_pf(; 
@@ -165,11 +167,13 @@ function postprocess_pfs_hi(
                             n_rep_trial=n_rep_trial_reduced,
                         )
                     end
-                    println(mode)
-                    if isfile(pf.patterns[1][1]) & isfile(pf.patterns[end][end])
+                    fileexists = isfile(pf.patterns[1][1]) & isfile(pf.patterns[end][end])
+                    if fileexists
+                        println("Necessary simulation files exist, fitting psychometric function!")
                         out = @memo Default() simulate(pf)
                         Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
                     else
+                        println("Necessary simulation files DO NOT exist, skipping fitting psychometric function!")
                         NaN
                     end
                 end
@@ -214,6 +218,74 @@ function postprocess_pfs_hi(
     df
 end
 
+"""
+    postprocess_pfs([center_freqs, n_comps, increments, rove_sizes])
+
+Postprocess constant-stimulus PFs to extract thresholds and slopes and save
+"""
+function postprocess_pfs_puretone(
+    center_freqs=[500.0, 1000.0, 2000.0, 4000.0],
+    n_comps=[1],
+    increments=vcat(-999.9, -45.0:2.5:5.0),
+    rove_sizes=[0.001, 10.0],
+)
+    # Map through models and build dataframe containing thresholds for each model/condition
+    df = map(Iterators.product(center_freqs, rove_sizes)) do (center_freq, rove_size)
+        # Map through possible PF modes and plot each with different markers
+        out = map(["singlechannel", "profilechannel", "templatebased"]) do mode
+            # Handle modeswitch
+            if (mode == "singlechannel") | (mode == "profilechannel")
+                exp = ProfileAnalysis_PFObserver()
+            elseif mode == "templatebased"
+                exp = ProfileAnalysis_PFTemplateObserver()
+            end
+
+            # Fetch possible models, subset to exclude HSR
+            models = setup(exp, center_freq)[2:end]
+
+            # Map through models
+            out = map(models) do model
+                # Map through n_comps for this model, fit psychometric function, and estimate psychometric functions and extract threshold for each
+                θ = map(n_comps) do n_comp
+                    # Simulate psychometric function
+                    pf = getpffunc(mode, model, exp)(model, increments, center_freq, n_comp, rove_size)
+                    if isfile(pf.patterns[1][1]) & isfile(pf.patterns[end][end])
+                        out = @memo Default() simulate(pf)
+                        Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
+                    else
+                        NaN
+                    end
+                end
+
+                # Compile results into dataframe
+                DataFrame(
+                    θ=θ, 
+                    n_comp=n_comps, 
+                    center_freq=center_freq, 
+                    mode=mode, 
+                    model=model,
+                    rove_size=rove_size,
+                )
+            end
+
+            # Concatenate and return
+            vcat(out...)
+        end
+
+        # Concatenate and return
+        vcat(out...)
+    end
+
+    # Concatenate all together
+    df = vcat(df...)
+
+    # Convert model to model string
+    df.model .= modelstr.(df.model)
+
+    # Save dataframe to disk
+    save(joinpath("data", "sim_pro", "model_thresholds_puretone.jld2"), Dict("df" => df))
+    df
+end
 
 function load_simulated_thresholds()
     load(joinpath("data", "sim_pro", "model_thresholds.jld2"))["df"]
@@ -225,6 +297,10 @@ end
 
 function load_simulated_thresholds_adjusted()
     load(joinpath("data", "sim_pro", "model_thresholds_adjusted.jld2"))["df"]
+end
+
+function load_simulated_thresholds_puretone()
+    load(joinpath("data", "sim_pro", "model_thresholds_puretone.jld2"))["df"]
 end
 
 function find_constant(θ_hat, θ)

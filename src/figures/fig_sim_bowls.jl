@@ -1,7 +1,17 @@
 export genfig_sim_bowls_density_and_frequency_bowls,
        genfig_sim_bowls_gmmf,
        genfig_sim_bowls_density_and_frequency_bowls_rove_effects,
-       genfig_sim_bowls_summary
+       genfig_sim_bowls_density_and_frequency_bowls_simple,
+       genfig_sim_bowls_summary,
+       genfig_sim_bowls_puretonecontrol,
+       genfig_sim_bowls_puretonecontrol_LSR_only,
+       genfig_followup_puretonecontrol,
+       genfig_puretonecontrol_mechanism,
+       genfig_followup_puretonecontrol_no_cochlear_gain,
+       genfig_puretonecontrol_rl_functions,
+       genfig_sim_bowls_frequency_summary,
+       genfig_sim_bowls_modelbehavior_scatterplots,
+       θ_energy
 
 # Figure Θ
 # Figure Θ depicts the "executive summary" of the modeling, and bonus/extra/full results are also shown in a Figure Θ supplemental. In the main-text figure, the top panel depicts so-called "bowls" from the model vs behavior. The middle(?) panel depicts "frequency bowls" for the model vs behavior. Several supporting functions are provided, and different subpanels of the figures are generated using a few different functions:
@@ -623,25 +633,24 @@ Generate figure depicting behavior vs model performance
 Generate figure depicting "bowls" in different frequency conditions for different models
 and observers (rows and columns, respectively).
 """
-function genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
+function genfig_sim_bowls_density_and_frequency_bowls_simple()
     # Get full dataframe
     df = @chain load_simulated_thresholds_adjusted() begin  
-        @subset(:rove_size .== rove_size)
     end
 
     # Compile relevant behavioral data
     beh = @chain fetch_behavioral_data() begin
-        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+        @subset(:hl_group .== "< 5 dB HL")
         avg_behavioral_data()
     end
 
     # Set up figure
     set_theme!(theme_carney)
-    fig = Figure(; resolution=(700, 450))
-    axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:3]
+    fig = Figure(; resolution=(600, 450))
+    axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:2]
 
     # Loop over all combinations of mode and model
-    itr = collect(Iterators.product(unique(df.model), unique(df.mode)))
+    itr = collect(Iterators.product(unique(df.model), unique(df.mode)[[1, 3]]))
     map(zip(itr, axs)) do ((model, mode), ax)
         # Subset data
         df_subset = @subset(df, :model .== model, :mode .== mode)
@@ -650,26 +659,32 @@ function genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
         map(enumerate([500.0, 1000.0, 2000.0, 4000.0])) do (idx, freq)
             # Subset further
             sims = @subset(df_subset, :center_freq .== freq, :adjusted .== false)
-            sims_adj = @subset(df_subset, :center_freq .== freq, :adjusted .== true)
-            behs = @subset(beh, :freq .== freq)
+            sims_fixed = @subset(sims, :rove_size .== 0.001)
+            sims_roved = @subset(sims, :rove_size .== 10.0)
+            beh_fixed = @subset(beh, :freq .== freq, :rove .== "fixed level")
+            beh_roved = @subset(beh, :freq .== freq, :rove .== "roved level")
 
             # Add scatters and lines for: unadjusted thresholds (pink), adjusted thresholds
             # (red), and behavioral thresholds (black)
-            scatter!(ax, (1:5) .+ (idx-1)*7, sims.θ; color=:pink)
-            lines!(ax, (1:5) .+ (idx-1)*7, sims.θ; color=:pink)
-            scatter!(ax, (1:5) .+ (idx-1)*7, behs.threshold; color=:black)
-            lines!(ax, (1:5) .+ (idx-1)*7, behs.threshold; color=:black)
-            scatter!(ax, (1:5) .+ (idx-1)*7, sims_adj.θ; color=:red)
-            lines!(ax, (1:5) .+ (idx-1)*7, sims_adj.θ; color=:red)
+            scatter!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
+            lines!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
+            if nrow(beh_roved) > 0
+                scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, marker=:rect)
+                lines!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, marker=:rect, linestyle=:dash)
+            end
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=:red)
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=:red)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:red, marker=:rect)
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:red, marker=:rect, linestyle=:dash)
 
-            # Add another marker at the means in each frequency condition, beside data to right
-            μ_beh = mean(behs.threshold)
-            μ_mod = mean(sims_adj.θ)
-            lines!(ax, [6 + (idx-1)*7, 6 + (idx-1)*7], [μ_beh, μ_mod]; color=:lightgray)
-            scatter!(ax, [6 + (idx-1)*7], [μ_beh]; color=:black, marker=:rect)
-            scatter!(ax, [6 + (idx-1)*7], [μ_mod]; color=:red, marker=:rect)
-            scatter!(ax, [6 + (idx-1)*7], [μ_beh]; color=:white, marker=:rect, markersize=3.0)
-            scatter!(ax, [6 + (idx-1)*7], [μ_mod]; color=:white, marker=:rect, markersize=3.0)
+            # # Add another marker at the means in each frequency condition, beside data to right
+            # μ_beh = mean(behs.threshold)
+            # μ_mod = mean(sims_adj.θ)
+            # lines!(ax, [6 + (idx-1)*7, 6 + (idx-1)*7], [μ_beh, μ_mod]; color=:lightgray)
+            # scatter!(ax, [6 + (idx-1)*7], [μ_beh]; color=:black, marker=:rect)
+            # scatter!(ax, [6 + (idx-1)*7], [μ_mod]; color=:red, marker=:rect)
+            # scatter!(ax, [6 + (idx-1)*7], [μ_beh]; color=:white, marker=:rect, markersize=3.0)
+            # scatter!(ax, [6 + (idx-1)*7], [μ_mod]; color=:white, marker=:rect, markersize=3.0)
         end
 
         # Add ticks
@@ -682,12 +697,252 @@ function genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
         ylims!(ax, -35.0, 10.0)
         ax.yticks = -30.0:10.0:10.0
 
-        # Add text label indicating performance
-        err = round(@subset(df_subset, :adjusted .== true).rms[1]; digits=1)
-        text!(ax, [20.0], [-33.0]; color=:red, text="$err dB")
+        # # Add text label indicating performance
+        # err = round(@subset(df_subset, :adjusted .== true).rms[1]; digits=1)
+        # text!(ax, [20.0], [-33.0]; color=:red, text="$err dB")
 
-        # Add info at top of page
-        errvar = max(0.0, round(100.0 * @subset(df_subset, :adjusted .== true).varexp[1]; digits=3))
+        # # Add info at top of page
+        # errvar = max(0.0, round(100.0 * @subset(df_subset, :adjusted .== true).varexp[1]; digits=3))
+    end
+    
+    # Add labels
+    Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2); colgap!(fig.layout, 1, Relative(0.01));
+    Label(fig[4, 1:2], "Number of components // Target frequency (Hz)"); rowgap!(fig.layout, 3, Relative(0.05));
+
+    # Adjust colgaps and neaten grid
+    neaten_grid!(axs)
+    colgap!(fig.layout, 2, Relative(0.01))
+#    colgap!(fig.layout, 3, Relative(0.01))
+    rowgap!(fig.layout, 1, Relative(0.01))
+    rowgap!(fig.layout, 2, Relative(0.01))
+
+    # Return
+    fig
+end
+
+function genfig_sim_bowls_frequency_summary()
+    # Get full dataframe
+    df = @chain load_simulated_thresholds_adjusted() begin  
+        @subset(:rove_size .== 0.001, :adjusted .== false)
+    end
+
+    # Compile relevant behavioral data
+    beh = @chain fetch_behavioral_data() begin
+        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+        avg_behavioral_data()
+    end
+
+    # Set up figure
+    set_theme!(theme_carney)
+    fig = Figure(; resolution=(200, 250))
+    axs = [Axis(fig[i, j]; xminorticksvisible=false) for i in 1:3, j in 1:2]
+
+    # Loop over all combinations of mode and model
+    itr = collect(Iterators.product(unique(df.model), unique(df.mode)[[1,3]]))
+    map(zip(itr, axs)) do ((model, mode), ax)
+        # Subset modeled data
+        df_subset = @chain df begin
+            @subset(:model .== model, :mode .== mode)
+            groupby(:center_freq)
+            @combine(:θ = mean(:θ))
+            @orderby(:center_freq)
+        end
+
+        # Subset and average real data
+        beh_subset = @chain beh begin
+            groupby(:freq)
+            @combine(:threshold = mean(:threshold))
+            @orderby(:freq)
+        end
+
+        scatter!(ax, 1.0:1.0:4.0, df_subset.θ; color=:red)
+        lines!(ax, 1.0:1.0:4.0, df_subset.θ; color=:red)
+        scatter!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=:black)
+        lines!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=:black)
+
+        # Add ticks
+        ax.xticks = (
+            1.0:1.0:4.0,
+            ["0.5", "1", "2", "4"],
+        )
+
+        # Set limits
+        ylims!(ax, -35.0, 10.0)
+        ax.yticks = -30.0:10.0:10.0
+    end
+    
+    # Add labels
+    Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2); colgap!(fig.layout, 1, Relative(0.01));
+    Label(fig[4, 1:2], "Target frequency (kHz)"); rowgap!(fig.layout, 3, Relative(0.01));
+
+    # Adjust colgaps and neaten grid
+    neaten_grid!(axs)
+    colgap!(fig.layout, 2, Relative(0.01))
+    rowgap!(fig.layout, 1, Relative(0.01))
+    rowgap!(fig.layout, 2, Relative(0.01))
+
+    # Return
+    fig
+end
+
+function genfig_sim_bowls_modelbehavior_scatterplots()
+    # Get full dataframe
+    df = @chain load_simulated_thresholds_adjusted() begin  
+        @subset(:rove_size .== 0.001, :adjusted .== false)
+    end
+
+    # Compile relevant behavioral data
+    beh = @chain fetch_behavioral_data() begin
+        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+        avg_behavioral_data()
+        @orderby(:n_comp, :freq)
+    end
+
+    # Set up figure
+    set_theme!(theme_carney)
+    fig = Figure(; resolution=(200, 250))
+    axs = [Axis(fig[i, j]; xminorticksvisible=false) for i in 1:3, j in 1:2]
+
+    # Loop over all combinations of mode and model
+    itr = collect(Iterators.product(unique(df.model), unique(df.mode)[[1,3]]))
+    map(zip(itr, axs)) do ((model, mode), ax)
+        # Subset modeled data
+        df_subset = @chain df begin
+            @subset(:model .== model, :mode .== mode)
+            @orderby(:n_comp, :center_freq)
+        end
+
+        # Scatter each dataset
+        scatter!(ax, beh.threshold, df_subset.θ; color=:black, marker=pick_marker.(beh.freq))
+
+        # Fit lm 
+        temp = DataFrame(behavior=beh.threshold, model=df_subset.θ)
+        m = lm(@formula(model ~ behavior), temp) 
+        varexp = string(round(r2(m) * 100.0; digits=2))
+        x̂ = -30.0:0.1:10.0
+        β₀ = coef(m)[1]
+        β = coef(m)[2]
+        lines!(ax, x̂, β₀ .+ x̂ .* β; color=:gray)
+        text!(ax, [-30.0], [0.0]; text=string(varexp))
+
+        # Set limits
+        ylims!(ax, -35.0, 10.0)
+        ax.yticks = -30.0:10.0:10.0
+        xlims!(ax, -35.0, 10.0)
+        ax.xticks = -30.0:10.0:10.0
+    end
+    
+    # Add labels
+    Label(fig[:, 0], "Model threshold (dB SRS)"; rotation=π/2); colgap!(fig.layout, 1, Relative(0.01));
+    Label(fig[4, 1:2], "Behavioral threshold (dB SRS)"); rowgap!(fig.layout, 3, Relative(0.01));
+
+    # Adjust colgaps and neaten grid
+    neaten_grid!(axs)
+    colgap!(fig.layout, 2, Relative(0.01))
+    rowgap!(fig.layout, 1, Relative(0.01))
+    rowgap!(fig.layout, 2, Relative(0.01))
+
+    # Return
+    fig
+end
+
+function θ_energy(increments=-20.0:0.5:20.0, n=5000)
+    # Loop through each increment
+    pcorr = map(increments) do inc
+        # Sample roved levels (standard and target, separately)
+        lvls_ref = rand(Uniform(60.0, 80.0), n)
+        lvls_tar = rand(Uniform(60.0, 80.0), n)
+
+        # Apply increment to target levels
+        lvls_tar .= lvls_tar .+ srs_to_ΔL(inc)
+
+        # Return correct/incorrect
+        mean(lvls_tar .> lvls_ref)
+    end
+
+    # Plot
+    # fig = Figure()
+    # ax = Axis(fig[1, 1])
+    # lines!(ax, increments, pcorr)
+    # hlines!(ax, [0.791])
+
+    return increments[findfirst(x -> x > 0.75, pcorr)]
+end
+
+"""
+    genfig_sim_bowls_puretonecontrol()
+
+Generate figure depicting behavior vs model performance, pure-tone control 
+
+Generate figure depicting "bowls" in different frequency conditions for different models and
+observers (rows and columns, respectively). Focus on measurements of control
+conditions/observers to help explain performance for LSR roved.
+"""
+function genfig_sim_bowls_puretonecontrol()
+    # Get full dataframe
+    df = @chain load_simulated_thresholds_adjusted() begin  
+        @subset(:adjusted .== false)
+    end
+
+    # Load single-component control simulations
+    df_control = @chain load_simulated_thresholds_puretone() begin
+    end
+
+    # Compile relevant behavioral data
+    # beh = @chain fetch_behavioral_data() begin
+    #     @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+    #     avg_behavioral_data()
+    # end
+
+    # Run simulation to quickly assess where performance would be under energy-based 
+    # decisions with roving
+    θ_e = θ_energy()
+
+    # Set up figure
+    set_theme!(theme_carney)
+    fig = Figure(; resolution=(700, 450))
+    axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:3]
+
+    # Loop over all combinations of mode and model
+    itr = collect(Iterators.product(unique(df.model), unique(df.mode)))
+    map(zip(itr, axs)) do ((model, mode), ax)
+        # Subset data
+        df_subset = @subset(df, :model .== model, :mode .== mode)
+        df_control_subset = @subset(df_control, :model .== model, :mode .== mode)
+
+        # Plot control line for θ_energy
+        hlines!(ax, [θ_e]; color=:red, linestyle=:dash)
+
+        # Plot each bowl, with raw and adjusted thresholds
+        map(enumerate([500.0, 1000.0, 2000.0, 4000.0])) do (idx, freq)
+            # Subset further
+            sims_unroved = @subset(df_subset, :center_freq .== freq, :adjusted .== false, :rove_size .== 0.001)
+            sims_control_unroved = @subset(df_control_subset, :center_freq .== freq, :rove_size .== 0.001)
+            sims_roved = @subset(df_subset, :center_freq .== freq, :adjusted .== false, :rove_size .== 10.0)
+            sims_control_roved = @subset(df_control_subset, :center_freq .== freq, :rove_size .== 10.0)
+            # behs = @subset(beh, :freq .== freq)
+
+            # Add scatters and lines for: unadjusted thresholds (pink), adjusted thresholds
+            # (red), and behavioral thresholds (black)
+            # scatter!(ax, (1:5) .+ (idx-1)*8 .+ 1, sims_unroved.θ; color=:black)
+            # lines!(ax, (1:5) .+ (idx-1)*8 .+ 1, sims_unroved.θ; color=:black)
+            # scatter!(ax, [(idx-1)*8], sims_control_unroved.θ; color=:black, marker=:diamond, markersize=10.0)
+
+            scatter!(ax, (1:5) .+ (idx-1)*8 .+ 1, sims_roved.θ; color=:black)
+            lines!(ax, (1:5) .+ (idx-1)*8 .+ 1, sims_roved.θ; color=:black)
+            scatter!(ax, [(idx-1)*8], sims_control_roved.θ; color=:black, marker=:diamond, markersize=10.0)
+
+        end
+
+        # Add ticks
+        ax.xticks = (
+            vcat([(1:5) .+ (i-1)*8 .+ 1 for i in 1:4]...),
+            repeat(["5", "13", "21", "29", "37"], 4),
+        )
+
+        # Set limits
+        ylims!(ax, -35.0, 20.0)
+        ax.yticks = -30.0:10.0:10.0
     end
     
     # Add labels
@@ -702,6 +957,424 @@ function genfig_sim_bowls_density_and_frequency_bowls(; rove_size=0.001)
     rowgap!(fig.layout, 2, Relative(0.01))
 
     # Return
+    fig
+end
+
+"""
+    genfig_sim_bowls_puretonecontrol_LSR_only()
+
+Generate figure depicting behavior vs model performance, pure-tone control, LSR
+single-channel only
+
+Generate figure depicting "bowls" in different frequency conditions for the single-channel
+LSR model.
+"""
+function genfig_sim_bowls_puretonecontrol_LSR_only()
+    # Get full dataframe
+    df = @chain load_simulated_thresholds_adjusted() begin  
+        @subset(:adjusted .== false)
+    end
+
+    # Load single-component control simulations
+    df_control = @chain load_simulated_thresholds_puretone() begin
+    end
+
+    # Run simulation to quickly assess where performance would be under energy-based 
+    # decisions with roving
+    θ_e = θ_energy()
+
+    # Set up figure
+    set_theme!(theme_carney)
+    fig = Figure(; resolution=(300, 200))
+    ax = Axis(fig[1, 1]; xticklabelrotation=π/2, xminorticksvisible=false)
+
+    # Loop over all combinations of mode and model
+    # Subset data
+    df_subset = @subset(df, :model .== "AuditoryNerveZBC2014_low", :mode .== "singlechannel")
+    df_control_subset = @subset(df_control, :model .== "AuditoryNerveZBC2014_low", :mode .== "singlechannel")
+
+    # Plot control line for θ_energy
+    hlines!(ax, [θ_e]; color=:red, linestyle=:dash)
+
+    # Plot each bowl, with raw and adjusted thresholds
+    map(enumerate([500.0, 1000.0, 2000.0, 4000.0])) do (idx, freq)
+        # Subset further
+        sims_roved = @subset(df_subset, :center_freq .== freq, :adjusted .== false, :rove_size .== 10.0)
+        sims_control_roved = @subset(df_control_subset, :center_freq .== freq, :rove_size .== 10.0)
+
+        # Plot data
+        scatter!(ax, (1:5) .+ (idx-1)*8 .+ 1, sims_roved.θ; color=:black)
+        lines!(ax, (1:5) .+ (idx-1)*8 .+ 1, sims_roved.θ; color=:black)
+        scatter!(ax, [(idx-1)*8], sims_control_roved.θ; color=:darkgray, marker=:diamond, markersize=10.0)
+
+    end
+
+    # Add ticks
+    ax.xticks = (
+        vcat([(1:5) .+ (i-1)*8 .+ 1 for i in 1:4]...),
+        repeat(["5", "13", "21", "29", "37"], 4),
+    )
+
+    # Set limits
+    ylims!(ax, -35.0, 20.0)
+    ax.yticks = -30.0:10.0:10.0
+    
+    # Add labels
+    ax.ylabel = "Threshold (dB SRS)"
+    ax.xlabel = "Number of components // Target frequency (Hz)"
+
+    # Return
+    fig
+end
+
+
+function genfig_followup_puretonecontrol()
+    # We need to compare a distribution of observed target levels to a distribution of 
+    # observered LSR target rates to convince ourselves that LSR rates can really outperform
+    # energy-based decisions
+
+    # Set random seeds
+    seed = 949349302050240
+    rng = Xoshiro(seed) 
+    config = Default(; seed=seed, rng=rng, resolve_rng=true, resolve_codename=true, codename="puretonecontrol")
+
+    # Pick params
+    n = 1000
+    n_comp = 21
+    incs = -20.0:2.5:10.0
+
+    # Configure model
+    results = map(incs) do inc
+        model = AuditoryNerveZBC2014(; cf=[2000.0], fiber_type="low")
+
+        # First, pick distribution of levels
+        levels_ref = rand(config.rng, Uniform(60.0, 80.0), n)
+        levels_tar = rand(config.rng, Uniform(60.0, 80.0), n)
+
+        # Next, synthesize stimuli
+        stim_ref = map(x -> ProfileAnalysisTone(; center_freq=2e3, pedestal_level=x, increment=-1000.0, n_comp=n_comp), levels_ref)
+        stim_tar = map(x -> ProfileAnalysisTone(; center_freq=2e3, pedestal_level=x, increment=inc, n_comp=n_comp), levels_tar)
+
+        # Create AvgPattern
+        sim_ref = AvgPattern(; model=model, stimuli=stim_ref)
+        sim_tar = AvgPattern(; model=model, stimuli=stim_tar)
+
+        # Simulate with memoization
+        resp_ref = @memo config simulate(sim_ref)
+        resp_tar = @memo config simulate(sim_tar)
+
+        # Return
+        return (getindex.(resp_ref, 1), levels_ref), (getindex.(resp_tar, 1), levels_tar) 
+    end
+
+    # Each element in `results` above is a tuple of tuples. The first sub-element is a tuple
+    # containing a vector of N average rates in the target channel for a profile-analysis
+    # standard stimulus and a vector of N corresponding target sound levels. The second
+    # sub-element is the same, except for target stimuli. Each element corresponds to one of
+    # the target increments specified in `incs`
+
+    # Create figure
+    fig = Figure(; resolution=(500, 500))
+    ax_levels = Axis(fig[1, 1]; yminorticksvisible=false)
+    ax_rates = Axis(fig[1, 2]; yminorticksvisible=false)
+
+    # Set some figure parameters
+    offset_y = 0.15  # vertical offset between each density kernel histogram
+    alpha = 0.5     # alpha setting for all colors
+
+    # Map through results and plot each
+    map(enumerate(zip(incs, results))) do (idx, (inc, result))
+        # Unpack data
+        (μ_ref, l_ref), (μ_tar, l_tar) = result
+
+        # Add figure for levels
+        density!(ax_levels, l_ref; offset=offset_y*(idx-1), color=RGBA(0.0, 0.0, 0.0, alpha))
+        density!(ax_levels, l_tar .+ srs_to_ΔL(inc); offset=offset_y*(idx-1), color=RGBA(1.0, 0.0, 0.0, alpha))
+        density!(ax_rates, μ_ref; offset=offset_y*(idx-1), color=RGBA(0.0, 0.0, 0.0, alpha))
+        density!(ax_rates, μ_tar; offset=offset_y*(idx-1), color=RGBA(1.0, 0.0, 0.0, alpha))
+
+        # Demarcate mean and +/- 1 SD
+        scatter!(ax_levels, [mean(l_ref)], [offset_y*(idx-1) - offset_y*0.1]; color=RGBA(0.0, 0.0, 0.0, alpha))
+        scatter!(ax_levels, [mean(l_tar) + srs_to_ΔL(inc)], [offset_y*(idx-1) - offset_y*0.1]; color=RGBA(1.0, 0.0, 0.0, alpha))
+        scatter!(ax_rates, [mean(μ_ref)], [offset_y*(idx-1) - offset_y*0.1]; color=RGBA(0.0, 0.0, 0.0, alpha))
+        scatter!(ax_rates, [mean(μ_tar)], [offset_y*(idx-1) - offset_y*0.1]; color=RGBA(1.0, 0.0, 0.0, alpha))
+
+        # Demarcate mean and +/- 1 SD
+        errorbars!(ax_levels, [mean(l_ref)], [offset_y*(idx-1) - offset_y*0.1], [std(l_ref)]; color=RGBA(0.0, 0.0, 0.0, alpha), direction=:x)
+        errorbars!(ax_levels, [mean(l_tar) + srs_to_ΔL(inc)], [offset_y*(idx-1) - offset_y*0.1], [std(l_tar .+ srs_to_ΔL(inc))]; color=RGBA(1.0, 0.0, 0.0, alpha), direction=:x)
+        errorbars!(ax_rates, [mean(μ_ref)], [offset_y*(idx-1) - offset_y*0.1], [std(μ_ref)]; color=RGBA(0.0, 0.0, 0.0, alpha), direction=:x)
+        errorbars!(ax_rates, [mean(μ_tar)], [offset_y*(idx-1) - offset_y*0.1], [std(μ_tar)]; color=RGBA(1.0, 0.0, 0.0, alpha), direction=:x)
+
+        # Demarcate significance (based on d' >= 1)
+        d′_level = (mean(l_tar) - mean(l_ref)) / sqrt(1/2 * (var(l_tar) + var(l_ref)))
+        d′_rate = (mean(μ_tar) - mean(μ_ref)) / sqrt(1/2 * (var(μ_tar) + var(μ_ref)))
+
+        if abs(d′_level) >= 1.0
+            text!(ax_levels, [mean(l_ref)], [offset_y*(idx-1) - offset_y*0.12]; text="*", fontsize=20.0, align=(:center, :top))
+        end
+
+        if abs(d′_rate) >= 1.0
+            text!(ax_rates, [mean(μ_ref)], [offset_y*(idx-1) - offset_y*0.12]; text="*", fontsize=20.0, align=(:center, :top))
+        end
+    end
+    
+    # Handle labels and ticks
+    ax_levels.yticks = 0.0:(offset_y*1.0):(offset_y*(length(results)-1)), string.(incs)
+    ax_levels.xticks = 60.0:10.0:90.0
+    ax_levels.ylabel = "Increment (dB SRS)"
+    ax_levels.xlabel = "Target component level (dB SPL)"
+
+    ax_rates.yticks = 0.0:(offset_y*1.0):(offset_y*(length(results)-1))
+    ax_rates.xticks = 20.0:10.0:70.0
+    ax_rates.xlabel = "LSR average rate (sp/s)"
+    neaten_grid!([ax_levels, ax_rates])
+
+    # Return fig
+    fig
+end
+
+function genfig_followup_puretonecontrol_no_cochlear_gain()
+    # We need to compare a distribution of observed target levels to a distribution of 
+    # observered LSR target rates to convince ourselves that LSR rates can really outperform
+    # energy-based decisions
+
+    # Set random seeds
+    seed = 949349302050240
+    rng = Xoshiro(seed) 
+    config = Default(; seed=seed, rng=rng, resolve_rng=true, resolve_codename=true, codename="puretonecontrol_no_cochlear_gain")
+
+    # Pick params
+    n = 1000
+    n_comp = 21
+    incs = -20.0:2.5:10.0
+
+    # Configure model
+    results = map(incs) do inc
+        model = AuditoryNerveZBC2014(; cf=[2000.0], fiber_type="low", cohc=[0.0])
+
+        # First, pick distribution of levels
+        levels_ref = rand(config.rng, Uniform(60.0, 80.0), n)
+        levels_tar = rand(config.rng, Uniform(60.0, 80.0), n)
+
+        # Next, synthesize stimuli
+        stim_ref = map(x -> ProfileAnalysisTone(; center_freq=2e3, pedestal_level=x, increment=-1000.0, n_comp=n_comp), levels_ref)
+        stim_tar = map(x -> ProfileAnalysisTone(; center_freq=2e3, pedestal_level=x, increment=inc, n_comp=n_comp), levels_tar)
+
+        # Create AvgPattern
+        sim_ref = AvgPattern(; model=model, stimuli=stim_ref)
+        sim_tar = AvgPattern(; model=model, stimuli=stim_tar)
+
+        # Simulate with memoization
+        resp_ref = @memo config simulate(sim_ref)
+        resp_tar = @memo config simulate(sim_tar)
+
+        # Return
+        return (getindex.(resp_ref, 1), levels_ref), (getindex.(resp_tar, 1), levels_tar) 
+    end
+
+    # Each element in `results` above is a tuple of tuples. The first sub-element is a tuple
+    # containing a vector of N average rates in the target channel for a profile-analysis
+    # standard stimulus and a vector of N corresponding target sound levels. The second
+    # sub-element is the same, except for target stimuli. Each element corresponds to one of
+    # the target increments specified in `incs`
+
+    # Create figure
+    fig = Figure(; resolution=(500, 500))
+    ax_levels = Axis(fig[1, 1]; yminorticksvisible=false)
+    ax_rates = Axis(fig[1, 2]; yminorticksvisible=false)
+
+    # Set some figure parameters
+    offset_y = 0.15  # vertical offset between each density kernel histogram
+    alpha = 0.5     # alpha setting for all colors
+
+    # Map through results and plot each
+    map(enumerate(zip(incs, results))) do (idx, (inc, result))
+        # Unpack data
+        (μ_ref, l_ref), (μ_tar, l_tar) = result
+
+        # Add figure for levels
+        density!(ax_levels, l_ref; offset=offset_y*(idx-1), color=RGBA(0.0, 0.0, 0.0, alpha))
+        density!(ax_levels, l_tar .+ srs_to_ΔL(inc); offset=offset_y*(idx-1), color=RGBA(1.0, 0.0, 0.0, alpha))
+        density!(ax_rates, μ_ref; offset=offset_y*(idx-1), color=RGBA(0.0, 0.0, 0.0, alpha))
+        density!(ax_rates, μ_tar; offset=offset_y*(idx-1), color=RGBA(1.0, 0.0, 0.0, alpha))
+
+        # Demarcate mean and +/- 1 SD
+        scatter!(ax_levels, [mean(l_ref)], [offset_y*(idx-1) - offset_y*0.1]; color=RGBA(0.0, 0.0, 0.0, alpha))
+        scatter!(ax_levels, [mean(l_tar) + srs_to_ΔL(inc)], [offset_y*(idx-1) - offset_y*0.1]; color=RGBA(1.0, 0.0, 0.0, alpha))
+        scatter!(ax_rates, [mean(μ_ref)], [offset_y*(idx-1) - offset_y*0.1]; color=RGBA(0.0, 0.0, 0.0, alpha))
+        scatter!(ax_rates, [mean(μ_tar)], [offset_y*(idx-1) - offset_y*0.1]; color=RGBA(1.0, 0.0, 0.0, alpha))
+
+        # Demarcate mean and +/- 1 SD
+        errorbars!(ax_levels, [mean(l_ref)], [offset_y*(idx-1) - offset_y*0.1], [std(l_ref)]; color=RGBA(0.0, 0.0, 0.0, alpha), direction=:x)
+        errorbars!(ax_levels, [mean(l_tar) + srs_to_ΔL(inc)], [offset_y*(idx-1) - offset_y*0.1], [std(l_tar .+ srs_to_ΔL(inc))]; color=RGBA(1.0, 0.0, 0.0, alpha), direction=:x)
+        errorbars!(ax_rates, [mean(μ_ref)], [offset_y*(idx-1) - offset_y*0.1], [std(μ_ref)]; color=RGBA(0.0, 0.0, 0.0, alpha), direction=:x)
+        errorbars!(ax_rates, [mean(μ_tar)], [offset_y*(idx-1) - offset_y*0.1], [std(μ_tar)]; color=RGBA(1.0, 0.0, 0.0, alpha), direction=:x)
+
+        # Demarcate significance (based on d' >= 1)
+        d′_level = (mean(l_tar) - mean(l_ref)) / sqrt(1/2 * (var(l_tar) + var(l_ref)))
+        d′_rate = (mean(μ_tar) - mean(μ_ref)) / sqrt(1/2 * (var(μ_tar) + var(μ_ref)))
+
+        if abs(d′_level) >= 1.0
+            text!(ax_levels, [mean(l_ref)], [offset_y*(idx-1) - offset_y*0.12]; text="*", fontsize=20.0, align=(:center, :top))
+        end
+
+        if abs(d′_rate) >= 1.0
+            text!(ax_rates, [mean(μ_ref)], [offset_y*(idx-1) - offset_y*0.12]; text="*", fontsize=20.0, align=(:center, :top))
+        end
+    end
+    
+    # Handle labels and ticks
+    ax_levels.yticks = 0.0:(offset_y*1.0):(offset_y*(length(results)-1)), string.(incs)
+    ax_levels.xticks = 60.0:10.0:90.0
+    ax_levels.ylabel = "Increment (dB SRS)"
+    ax_levels.xlabel = "Target component level (dB SPL)"
+
+    ax_rates.yticks = 0.0:(offset_y*1.0):(offset_y*(length(results)-1))
+    ax_rates.xticks = 20.0:10.0:70.0
+    ax_rates.xlabel = "LSR average rate (sp/s)"
+    neaten_grid!([ax_levels, ax_rates])
+
+    # Return fig
+    fig
+end
+
+
+"""
+    genfig_puretonecontrol_mechanism()
+
+Generates figure that demonstrates mechanism underlying LSRs exceeding expected performance 
+under rove 
+
+Simulates the difference in rate observed for a fixed level increment on a pure tone as a 
+function of the relative level and frequeny of two pure-tone flankers, as compared to the 
+difference in rate observed without flankers.
+"""
+function genfig_puretonecontrol_mechanism()
+    # Set baseline parameters
+    cf = 2000.0    # cf and tone frequency (Hz)
+    inc = 0.0      # increment (dB SRS)
+    level = 60.0   # sound level of unincremented tone (dB SPL)
+    fs = 100e3     # sampling rate (Hz)
+    dur = 0.1      # duration (s)
+
+    # Set flanker parameters
+    levels_flanker = 50.0:0.25:80.0
+    spacings = [0.125, 0.2, 0.5, 1.0, 2.0]
+
+    # Set up model
+    model = AuditoryNerveZBC2014(; cf=[cf], fractional=false, fs=fs, fiber_type="low")
+
+    # Simulate baseline difference
+    stim1 = scale_dbspl(pure_tone(cf, 0.0, dur, fs), level)
+    stim2 = scale_dbspl(pure_tone(cf, 0.0, dur, fs), level + srs_to_ΔL(inc))
+    δ_ref = mean(compute(model, stim2)[1]) - mean(compute(model, stim1)[1]) 
+
+    # Simulate differences with flankers
+    results = map(spacings) do spacing
+        map(levels_flanker) do level_flanker
+            # Synthesize flankers
+            flanker1 = scale_dbspl(pure_tone(cf * 2.0 ^ -spacing, 0.0, dur, fs), level_flanker)
+            flanker2 = scale_dbspl(pure_tone(cf * 2.0 ^ spacing, 0.0, dur, fs), level_flanker)
+            flanker = flanker1 .+ flanker2
+
+            # Simulate delta
+            return mean(compute(model, stim2 .+ flanker)[1]) - 
+                   mean(compute(model, stim1 .+ flanker)[1])
+        end
+    end
+
+    # Create figure
+    colors = ColorSchemes.Dark2_6[[1, 2, 3, 4, 6]]
+    set_theme!(theme_carney; fontsize=12.0)
+    fig = Figure(; resolution=(350, 350))
+    ax = Axis(fig[1, 1])
+    lns = map(zip(results, colors)) do (r, color)
+        # Transform result into percentage change
+        temp = 100 .* (r ./ δ_ref) .- 100.0
+
+        # Check if line ever goes below 0 --- if so, plot portion below as dotted, otherwise just plot it
+        if any(temp .< 0.0)
+            # Isolate portion above and below zero
+            temp_above = temp[temp .>= 0.0]
+            levels_above = levels_flanker[temp .>= 0.0]
+            temp_below = temp[temp .< 0.0]
+            levels_below = levels_flanker[temp .< 0.0]
+
+            lines!(ax, levels_above, temp_above; linewidth=2.0, linestyle=:solid, color=color)
+            lines!(ax, levels_below, temp_below; linewidth=2.0, linestyle=:dash, color=color)
+        else
+            lines!(ax, levels_flanker, temp; linewidth=2.0, color=color)
+        end
+    end
+    hlines!(ax, [0.0]; color=:black, linewidth=3.0)
+
+    ax.xlabel = "Flanker level (dB SPL)"
+    ax.ylabel = "Increment response\nre: response w/o flankers (%)"
+    ax.yticks = -100.0:50.0:150.0
+
+    Legend(fig[2, 1], lns, string.(spacings), "Probe-flanker spacing (oct)"; orientation=:horizontal)
+
+    fig
+end
+
+"""
+    genfig_puretonecontrol_rl_functions()
+
+Generates figure that demonstrates changes in RL functions underlying LSR "enhancement" 
+under rove
+"""
+function genfig_puretonecontrol_rl_functions()
+    # Set baseline parameters
+    cf = 2000.0    # cf and tone frequency (Hz)
+    fs = 100e3     # sampling rate (Hz)
+    dur = 0.1      # duration (s)
+    spacing = 0.5  # spacing of flakers re: target (oct)
+    level_flanker = 70.0  # level of flankers (dB SPL)
+
+    # Set RL function parameters
+    levels = 30.0:2.5:90.0
+
+    # Set up model
+    model = AuditoryNerveZBC2014(; cf=[cf], fractional=false, fs=fs, fiber_type="low")
+
+    # Map over levels and simulate RL function w/o flankers
+    rl_pure = map(levels) do level
+        # Synthesize stim and simulate average rate
+        stim = scale_dbspl(pure_tone(cf, 0.0, dur, fs), level)
+        mean(compute(model, stim)[1])
+    end
+
+    # Map over levels and simulate RL function w/ flankers
+    rl_flanked = map(levels) do level
+        # Synthesize stim 
+        stim = scale_dbspl(pure_tone(cf, 0.0, dur, fs), level)
+
+        # Synthesize flankers
+        flanker1 = scale_dbspl(pure_tone(cf * 2.0 ^ -spacing, 0.0, dur, fs), level_flanker)
+        flanker2 = scale_dbspl(pure_tone(cf * 2.0 ^ spacing, 0.0, dur, fs), level_flanker)
+        flanker = flanker1 .+ flanker2
+
+        # Compute rate
+        mean(compute(model, stim .+ flanker)[1])
+    end
+
+    # Plot
+    set_theme!(theme_carney; fontsize=12.0)
+    fig = Figure(; resolution=(300, 260))
+    ax = Axis(fig[1, 1]; xminorticksvisible=false)
+    vlines!(ax, [70.0]; color=:gray, linestyle=:dash, linewidth=1.0)
+    lines!(ax, levels, rl_pure; color=:black, linewidth=3.0)
+    lines!(ax, levels, rl_flanked; color=:pink, linewidth=3.0)
+
+    # Adjust labels
+    ax.xlabel = "Probe level (dB SPL)"
+    ax.ylabel = "Average rate (sp/s)"
+    ax.xticks = 10.0:10.0:90.0
+    ax.yticks = 0.0:25.0:100.0
+
+    # Adjust limits
+    ylims!(ax, 0.0, 100.0)
+
     fig
 end
 
