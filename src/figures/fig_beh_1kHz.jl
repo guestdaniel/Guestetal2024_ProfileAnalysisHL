@@ -1,13 +1,15 @@
-export genfig_beh_1kHz_psychometric_functions,
-       genfig_beh_1kHz_bowls,
-       genfig_beh_1kHz_rove_effects
+export genfig_beh_1kHz_psychometric_functions,  # Figure 1A
+       genfig_beh_1kHz_bowls,                   # Figure 1B
+       genfig_beh_1kHz_rove_effects             # Figure 1C
 
 """
     genfig_beh_1kHz_psychometric_functions()
 
 Plot group-average psychometric functions for all 1-kHz conditions
 
-Plot group-average psychometric functions for each hearing-status group for each density condition at 1kHz, emphasizing roved vs unroved data
+Plot group-average psychometric functions for each HL group for each component-count
+condition at 1-kHz target frequency, contrasting fixed-level and roved-level results. Placed
+on left side of Figure 1 as Subfigure A.
 """
 function genfig_beh_1kHz_psychometric_functions()
     # Load in data
@@ -109,7 +111,7 @@ function genfig_beh_1kHz_psychometric_functions()
                     scatter!(axs[idx_n_comp, idx_group], mean_sub.increment, mean_sub.μ; color=:white, markersize=fig_defaults["markersize"]/2, marker=marker)
                 end
 
-                # Handle thresholds at offset below data
+                # Plot thresholds with small markers below psychometric functions
                 offset = 0.35
                 fitted_fixed = @subset(df_fitted, :n_comp .== n_comp, :rove .== "fixed level", :hl_group .== group)
                 fitted_roved = @subset(df_fitted, :n_comp .== n_comp, :rove .== "roved level", :hl_group .== group)
@@ -139,9 +141,12 @@ end
 """
     genfig_beh_1kHz_bowls()
 
-Plot classic profile-analysis "bowls" 
+Plot classic profile-analysis "bowls" for the 1-kHz data 
 
-Plot group-average psychometric functions for each hearing-status group for each density condition at 1kHz, emphasizing roved vs unroved data
+Plot group-average thresholds as a function of component count for each group (faceted 
+by column). This plot is LHC's profile-analysis "bowl", and one of the main goals of the 
+project was to measure how the bowl shifts around due to cochlear hearing loss. This figure
+is placed in the upper-right corner of Figure 1 and is Subfigure B.
 """
 function genfig_beh_1kHz_bowls()
     # Load in data
@@ -205,6 +210,15 @@ function genfig_beh_1kHz_bowls()
     fig
 end
 
+"""
+    genfig_beh_1kHz_rove_effects()
+
+Plot differences between roved-level and fixed-level profile-analysis thresolds at 1 kHz
+
+Plot the "rove effect" magnitude, or the difference beween the roved-level threshold and
+the fixed-level threshold for every listener at 1 kHz. This figure is placed in the bottom
+left of Figure 1, and is Subfigure C.
+"""
 function genfig_beh_1kHz_rove_effects()
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
