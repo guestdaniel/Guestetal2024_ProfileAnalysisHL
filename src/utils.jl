@@ -1,7 +1,7 @@
 export logistic, logistic_fit, logistic_predict, hearing_group, hl_offsets,
     hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function, modelstr,
     variance_explained, get_hl_colors, color_group, fetch_behavioral_data,
-    avg_behavioral_data, fetch_audiograms, quickfitlm
+    avg_behavioral_data, fetch_audiograms, quickfitlm, pick_marker
 
 """
     logistic(x, λ; L, offset)
@@ -198,10 +198,19 @@ function avg_behavioral_data(df)
 end
 
 # Function to quickfit LM to dB SRS data
-function quickfitlm(x, y)
+function quickfitlm(x, y, x̂=LinRange(minimum(x) - 5.0, maximum(x) + 5.0, 1000))
     m = lm(hcat(ones(size(x)), x), y)
     b, m = coef(m)
-    x̂ = LinRange(-30.0, 5.0, 1000)
     ŷ = m .* x̂ .+ b
     return x̂, ŷ
+end
+
+# Function to select markers based on freq
+function pick_marker(freq)
+    @match freq begin
+        500.0 => :circle
+        1000.0 => :rect
+        2000.0 => :diamond
+        4000.0 => :pentagon
+    end
 end
