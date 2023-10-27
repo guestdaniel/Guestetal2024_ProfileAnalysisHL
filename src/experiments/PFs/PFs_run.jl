@@ -16,4 +16,7 @@ end
 #run(ProfileAnalysis_PFTemplateObserver_WidebandControl())
 
 # Run pure-tone control conditions
-run(ProfileAnalysis_PFTemplateObserver_PureToneControl())
+#run(ProfileAnalysis_PFTemplateObserver_PureToneControl())
+
+# Run additional models (opponent BE-BS, BE filterbank, BS filterbank)
+run(ProfileAnalysis_PFTemplateObserver_Extended())

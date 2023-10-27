@@ -4,6 +4,7 @@
 # Handle exports
 export ProfileAnalysis_PF, 
        ProfileAnalysis_PFTemplateObserver, 
+       ProfileAnalysis_PFTemplateObserver_Extended,
        ProfileAnalysis_PFObserver,
        ProfileAnalysis_PFTemplateObserver_HearingImpaired,
        ProfileAnalysis_PFTemplateObserver_PureToneControl,
@@ -13,6 +14,7 @@ export ProfileAnalysis_PF,
 # Declare experiment types
 abstract type ProfileAnalysis_PF <: ProfileAnalysisExperiment end
 struct ProfileAnalysis_PFTemplateObserver <: ProfileAnalysis_PF end
+struct ProfileAnalysis_PFTemplateObserver_Extended <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFTemplateObserver_PureToneControl <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFTemplateObserver_WidebandControl <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFTemplateObserver_HearingImpaired <: ProfileAnalysis_PF end
@@ -49,6 +51,43 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
         # Loop over models and assemble PFs
         map(models) do model
             Utilities.setup(experiment, model, increments, center_freq, n_comp, rove_size)
+        end
+    end
+
+    vcat(sims...)
+end
+
+"""
+    setup(::ProfileAnalysis_PFTemplateObserver_Extended)
+
+Set up all template-based psychometric function simulations for "extended" model grop.
+
+Set up all template-based psychometric function simulations, over the full range of
+simulated parameter values:
+    - Center frequencies of 0.5-4 kHz
+    - Component counts from 5-37
+    - Rove sizes from 0.001 (nominal 0) to 10 dB
+    - Increments from -45 to 5 dB SRS
+
+Returns a vector of simulation objects that can be evaluted with `simulate`.
+"""
+function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Extended)
+    # Choose frequencies, component counts, and rove sizes to loop over
+    center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
+    n_comps = [5, 13, 21, 29, 37]
+    rove_sizes = [0.001, 10.0]
+
+    # Configure other values
+    increments=vcat(-999.9, -45.0:2.5:5.0)
+
+    # Get simulations
+    sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
+        # Get possible models
+        models = setup_extended(experiment, center_freq)
+
+        # Loop over models and assemble PFs
+        map(models) do model
+            Utilities.setup(ProfileAnalysis_PFTemplateObserver(), model, increments, center_freq, n_comp, rove_size)
         end
     end
 

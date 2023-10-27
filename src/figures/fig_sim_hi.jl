@@ -1,7 +1,8 @@
 export genfig_sim_hi_behavior_correlations,
        genfig_sim_hi_cohc_correlations,
        genfig_audiograms_and_cohc,
-       genfig_sim_hi_bowls
+       genfig_sim_hi_bowls,
+       estimate_cohc_vs_gain
 
 """
     genfig_audiograms_and_cohc()
@@ -242,21 +243,32 @@ function genfig_sim_hi_cohc_correlations()
         sim[idx_row, :hl_group] = unique(beh[(beh.subj .== sim[idx_row, :subj]) .& (beh.freq .== sim[idx_row, :center_freq]), :hl_group])[1]
     end
 
+    # Transform "COHC" into "COHC_gainloss", a measure of how much cochlear gain is lost 
+    # at a given COHC relative to COHC=0.0
+    cohc, gainloss = estimate_cohc_vs_gain(2000.0, 20.0)  # 2 kHz, 20 dB SPL
+    sim[!, :cohc_gainloss] .= 0.0
+    for idx_row in 1:nrow(sim)
+        sim[idx_row, :cohc_gainloss] = gainloss[argmin(abs.(cohc .- sim[idx_row, :cohc]))]
+    end
+
+    # Transform COHC_gainloss from negative-signed to positive-signed (interpret as gain reduction re: COHC=0.0)
+    sim.cohc_gainloss[sim.cohc_gainloss .!= 0.0] .= -1 .* sim.cohc_gainloss[sim.cohc_gainloss .!= 0.0]
+
     # Figure out where to fill in background with color to indicate "HL group"
     criteria = @chain sim begin
         groupby([:hl_group])
         @combine(
-            :cohc_min = minimum(:cohc),
-            :cohc_max = maximum(:cohc),
+            :cohc_gainloss_min = maximum(:cohc_gainloss),
+            :cohc_gainloss_max = minimum(:cohc_gainloss),
         )
     end
     boundary_good_mid = mean([
-        criteria[criteria.hl_group .== "< 5 dB HL", :cohc_min][1],
-        criteria[criteria.hl_group .== "5-15 dB HL", :cohc_max][1],
+        criteria[criteria.hl_group .== "< 5 dB HL", :cohc_gainloss_min][1],
+        criteria[criteria.hl_group .== "5-15 dB HL", :cohc_gainloss_max][1],
     ])
     boundary_mid_poor = mean([
-        criteria[criteria.hl_group .== "5-15 dB HL", :cohc_min][1],
-        criteria[criteria.hl_group .== "> 15 dB HL", :cohc_max][1],
+        criteria[criteria.hl_group .== "5-15 dB HL", :cohc_gainloss_min][1],
+        criteria[criteria.hl_group .== "> 15 dB HL", :cohc_gainloss_max][1],
     ])
 
     # Set up figure
@@ -266,9 +278,9 @@ function genfig_sim_hi_cohc_correlations()
 
     # In each axis, draw colored boxes to indicate HL group
     for ax in axs
-        band!(ax, [0.0, boundary_mid_poor], [-40.0, -40.0], [20.0, 20.0]; color=(get_hl_colors()[3], 0.2))
-        band!(ax, [boundary_mid_poor, boundary_good_mid], [-40.0, -40.0], [20.0, 20.0]; color=(get_hl_colors()[2], 0.2))
-        band!(ax, [boundary_good_mid, 1.0], [-40.0, -40.0], [20.0, 20.0]; color=(get_hl_colors()[1], 0.2))
+        band!(ax, [-5.0, boundary_good_mid], [-45.0, -45.0], [25.0, 25.0]; color=(get_hl_colors()[1], 0.2))
+        band!(ax, [boundary_good_mid, boundary_mid_poor], [-45.0, -45.0], [25.0, 25.0]; color=(get_hl_colors()[2], 0.2))
+        band!(ax, [boundary_mid_poor, 40.0], [-45.0, -45.0], [25.0, 25.0]; color=(get_hl_colors()[3], 0.2))
     end
 
     # Loop over different combinations of observer ("mode") and model stage
@@ -291,9 +303,12 @@ function genfig_sim_hi_cohc_correlations()
         map(enumerate([5, 13, 21, 29, 37])) do (idx, n_comp)
             map([2000.0]) do center_freq
                 sim_ss = @subset(sim_subset, :n_comp .== n_comp, :center_freq .== center_freq)
-                scatter!(ax, sim_ss.cohc, sim_ss.θ; color=colors[idx], marker=pick_marker.(sim_ss.center_freq))
-                lines!(ax, smooth(sim_ss.cohc, sim_ss.θ; upsample=5, span=0.8)...; color=colors[idx], linestyle=(center_freq == 1000.0) ? :solid : :dash)
-                text!(ax, [1.05], [sim_ss.θ[argmax(sim_ss.cohc)]]; text="$n_comp", align=(:left, :center), color=colors[idx])
+                # scatter!(ax, sim_ss.cohc, sim_ss.θ; color=colors[idx], marker=pick_marker.(sim_ss.center_freq))
+                # lines!(ax, smooth(sim_ss.cohc, sim_ss.θ; upsample=5, span=0.8)...; color=colors[idx], linestyle=(center_freq == 1000.0) ? :solid : :dash)
+                # text!(ax, [1.05], [sim_ss.θ[argmax(sim_ss.cohc)]]; text="$n_comp", align=(:left, :center), color=colors[idx])
+
+                scatter!(ax, sim_ss.cohc_gainloss, sim_ss.θ; color=colors[idx], marker=pick_marker.(sim_ss.center_freq))
+                lines!(ax, smooth(sim_ss.cohc_gainloss, sim_ss.θ; upsample=5, span=0.8)...; color=colors[idx])
             end
         end
     end
@@ -302,13 +317,13 @@ function genfig_sim_hi_cohc_correlations()
     neaten_grid!(axs)
 
     # Set limits and ticks
-    ylims!.(axs, -35.0, 20.0)
-    xlims!.(axs, 0.0, 1.2)
-    [ax.xticks = 0.0:0.25:0.75 for ax in axs]
+    ylims!.(axs, -45.0, 25.0)
+    xlims!.(axs, -3.0, 40.0)
+    # [ax.xticks = 0.0:0.25:0.75 for ax in axs]
     [ax.yticks = -30.0:10.0:20.0 for ax in axs]
 
     # Add labels
-    Label(fig[4, :], "COHC parameter at target CF")
+    Label(fig[4, :], "Cochlear gain loss at CF attributed to OHC loss (dB)")
     Label(fig[:, 0], "Predicted threshold (dB SRS)"; rotation=π/2)
 
     # Adjust spacing
@@ -421,4 +436,24 @@ function genfig_sim_hi_bowls(freq=1000.0)
 
     # Render and save
     fig
+end
+
+function estimate_cohc_vs_gain(freq=2000.0, level=20.0)
+    # Quick and dirty simulation to quantify degree of cochlear gain as a function of COHC
+    cohcs = LinRange(0.0, 1.0, 30)
+    gains = map(cohcs) do cohc
+        # Synthesize pure tone
+        stim = scale_dbspl(pure_tone(freq, 0.0, 0.1, 100e3), level)
+
+        # Simulate C1 filter response
+        c1 = sim_ihcall_zbc2014(stim, freq; fs=100e3, cohc=cohc)[2]  # second element is C1 response
+
+        # Return gain
+        20 * log10(maximum(c1)/maximum(stim))
+    end
+
+    # Express cochlear gain w.r.t. gain at 0 COHC
+    gains = gains .- gains[end]
+    
+    return cohcs, gains
 end

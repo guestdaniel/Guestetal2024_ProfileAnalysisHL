@@ -80,19 +80,44 @@ save(projectdir("plots", "sim_methods", "05_example_responses.svg"), fig)
 # TODO:
 # - Add docstrings to functions, clean up
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Generate population responses to a level increment
-fig = genfig_sim_psychometric_functions_profiles()
-save(projectdir("plots", "sim_psychometric_functions", "01_profiles.svg"), fig)
+# # Generate population responses to a level increment
+# fig = genfig_sim_psychometric_functions_profiles()
+# save(projectdir("plots", "sim_psychometric_functions", "01_profiles.svg"), fig)
 
-# Generate "rate curve" plots based on each decoding strategy
-fig = genfig_sim_psychometric_functions_rate_curves("singlechannel")
-save(projectdir("plots", "sim_psychometric_functions", "02_rate_curves_singlechannel.svg"), fig)
+# # Generate "rate curve" plots based on each decoding strategy
+# fig = genfig_sim_psychometric_functions_rate_curves("singlechannel")
+# save(projectdir("plots", "sim_psychometric_functions", "02_rate_curves_singlechannel.svg"), fig)
 
-fig = genfig_sim_psychometric_functions_rate_curves("profilechannel")
-save(projectdir("plots", "sim_psychometric_functions", "03_rate_curves_profilechannel.svg"), fig)
+# fig = genfig_sim_psychometric_functions_rate_curves("profilechannel")
+# save(projectdir("plots", "sim_psychometric_functions", "03_rate_curves_profilechannel.svg"), fig)
 
-fig = genfig_sim_psychometric_functions_rate_curves("templatebased")
-save(projectdir("plots", "sim_psychometric_functions", "04_rate_curves_templatebased.svg"), fig)
+# fig = genfig_sim_psychometric_functions_rate_curves("templatebased")
+# save(projectdir("plots", "sim_psychometric_functions", "04_rate_curves_templatebased.svg"), fig)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Figure 5 2.0 // sim_reponses
+# Modeling response figures
+#
+# Shows response patterns for each model stage and condition
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+figs = genfig_sim_responses_main()
+for (fig, label) in zip(figs, ["HSR", "LSR", "BE", "BS"])
+    save(projectdir("plots", "sim_responses", "01_unroved_patterns_$label.svg"), fig)
+end
+function plot_colorbar(limits, colormap, ticks)
+    fig = Figure(; resolution = (250, 55))
+    Colorbar(
+        fig[1, 1], 
+        limits=limits, 
+        colormap=colormap, 
+        vertical=false, 
+        ticks=ticks, 
+        size=35
+    )
+    return fig
+end
+fig = plot_colorbar((-3.0, 3.0), reverse(colorschemes[:roma]), LinRange(-3.0, 3.0, 7))
+save(projectdir("plots", "sim_responses", "significance_colorbar.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Figure 6 // sim_bowls

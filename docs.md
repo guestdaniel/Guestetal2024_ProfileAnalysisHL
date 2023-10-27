@@ -1,8 +1,13 @@
-# Profile analysis in listeners with hearing impairment (Guest and Carney 20xx)
+# Profile analysis at high frequencies and in listeners with sensorineural hearing loss (Guest et al., 2023)
 
 # Introduction
 
 # Files and paths
+## Behavioral procedure
+Behavior was conducted in the human testing space of the Carney lab (URMC ???, University of Rochester, Rochester NY).
+The primary experimenters were Evie Feld and David Cameron.
+
+
 ## Behavioral data
 Behavioral data are stored in the `data` folder.
 Processed internal data is stored in `data/int_pro`.

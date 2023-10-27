@@ -3,7 +3,7 @@
 # other deliverables. 
 
 # Handle exports
-export ProfileAnalysisExperiment, setup_nohsr
+export ProfileAnalysisExperiment, setup_nohsr, setup_extended
 
 # Declare experiment types
 abstract type ProfileAnalysisExperiment <: Utilities.Experiment end
@@ -45,7 +45,7 @@ function Utilities.setup(
         audiogram=audiogram,
     )
 
-    # Create all models (HSR, LSR, BE, BS)
+    # Create all primary models (HSR, LSR, BE, BS, BE-multi, BS-multi, BE-BS)
     [
         AuditoryNerveZBC2014(; cf=LogRange((center_freq .* cf_range)..., n_cf), fiber_type="high", fractional=fractional, audiogram=audiogram, fs=fs), 
         AuditoryNerveZBC2014(; cf=LogRange((center_freq .* cf_range)..., n_cf), fiber_type="low", fractional=fractional, audiogram=audiogram, fs=fs), 
@@ -53,6 +53,75 @@ function Utilities.setup(
         InferiorColliculusSFIEBS(; frontend=frontend, fs=fs, StandardBS...),
     ]
 end
+
+"""
+    setup_extended(::ProfileAnalysisExperiment, center_freq, cf_range[, audiogram])
+
+Return vector of additional models with specified parameter settings
+
+Return vector of Model objects with specified CF and audiogram parameter settings. Used
+throughout the simulation code to standardize the process of setting up models. This 
+variant, `setup_extended`, does not return the regular models provided by `setup`, but 
+instead returns only the more complex multi-unit IC models.
+"""
+function setup_extended(
+    ::ProfileAnalysisExperiment, 
+    center_freq::Float64,
+    cf_range=cf_range,
+    audiogram=Audiogram();
+    n_cf=n_cf,
+)
+    # Prep frontend for IC models
+    frontend = AuditoryNerveZBC2014(;
+        cf=LogRange((center_freq .* cf_range)..., n_cf),
+        fractional=fractional,
+        fiber_type="high",
+        fs=fs,
+        audiogram=audiogram,
+    )
+
+    # Create primary BE and BS models
+    model_primary_be = InferiorColliculusSFIEBE(; frontend=frontend, fs=fs, StandardBE...)
+    model_primary_bs = InferiorColliculusSFIEBS(; frontend=frontend, fs=fs, StandardBS...)
+
+    # Create BE filterbank
+    filterbank_be = [
+        InferiorColliculusSFIEBE(; frontend=frontend, fs=fs, LowBE...),
+        InferiorColliculusSFIEBE(; frontend=frontend, fs=fs, StandardBE...),
+        InferiorColliculusSFIEBE(; frontend=frontend, fs=fs, HighBE...),
+    ]
+
+    # Create BS filterbank
+    filterbank_bs = [
+        InferiorColliculusSFIEBS(; frontend=frontend, fs=fs, LowBS...),
+        InferiorColliculusSFIEBS(; frontend=frontend, fs=fs, StandardBS...),
+        InferiorColliculusSFIEBS(; frontend=frontend, fs=fs, HighBS...),
+    ]
+
+    # Create supplementary models and return
+    [
+        # BE-BS opponent model
+        InferiorColliculusSFIE_Multiunit(; 
+            frontend=frontend, 
+            fs=fs, 
+            units_be=[model_primary_be], 
+            units_bs=[model_primary_bs]
+        ),
+        # BE filterbank model
+        InferiorColliculusSFIE_Multiunit(; 
+            frontend=frontend, 
+            fs=fs, 
+            units_be=filterbank_be, 
+        ),
+        # BS filterbank model
+        InferiorColliculusSFIE_Multiunit(; 
+            frontend=frontend, 
+            fs=fs, 
+            units_bs=filterbank_bs,
+        ),
+    ]
+end
+
 
 """
     setup_nohsr(::ProfileAnalysisExperiment, center_freq, cf_range[, audiogram])

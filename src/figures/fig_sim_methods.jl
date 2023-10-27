@@ -1,6 +1,7 @@
 export genfig_sim_methods_rlfs,              # Figure 4B, row #1
        genfig_sim_methods_tcs,               # Figure 4B, row #2
        genfig_sim_methods_mtfs,              # Figure 4B, row #3
+       genfig_sim_methods_mtf_filterbank,
        genfig_sim_methods_example_responses  # Figure 4B, row #4
 
 """
@@ -186,14 +187,15 @@ end
 
 Simulate and plot-in-place noise MTFs for AN model with specified parameters
 """
-function plot_model_mtf!(ax, cf=2000.0, fiber_type::String="high")
+function plot_model_mtf!(ax, cf=2000.0, fiber_type::String="high"; color=:black, kwargs...)
     # Handle model
-    model = AuditoryNerveZBC2014(; fiber_type=fiber_type, fractional=false, cf=[cf])
+    model = AuditoryNerveZBC2014(; fiber_type=fiber_type, fractional=false, cf=[cf], n_fiber=10)
 
     # Simulate responses and plot
-    sim = NoiseMTF(model, 8.0, 512.0, 31; l=20.0)
-    out = @memo Default() simulate(sim)
-    ax = plot_mtf!(ax, axis(sim), out, zeros(size(out)))
+    sim = ToneMTF(model, 4.0, 512.0, 31; l=40.0, dur=1.0, f=cf)
+    # sim = NoiseMTF(model, 4.0, 512.0, 31; l=10.0, dur=1.0)
+    out = @memo Default(; resolve_codename=true, codename="october") simulate(sim)
+    ax = plot_mtf!(ax, axis(sim), out, zeros(size(out)); color=color, kwargs...)
     ylims!(ax, 0.0, 1.25 * maximum(out))
 
     # Return
@@ -205,19 +207,58 @@ end
 
 Simulate and plot-in-place noise MTFs for IC model with specified parameters
 """
-function plot_model_mtf!(ax, cf=2000.0, modeltype::DataType=InferiorColliculusSFIEBE, param::Dict=StandardBE)
+function plot_model_mtf!(ax, cf=2000.0, modeltype::DataType=InferiorColliculusSFIEBE, param::Dict=StandardBE; color=:black, normfunc=identity, kwargs...)
     # Handle model
-    frontend = AuditoryNerveZBC2014(; fiber_type="high", fractional=false, cf=[cf])
+    frontend = AuditoryNerveZBC2014(; fiber_type="high", fractional=false, cf=[cf], n_fiber=10)
     model = modeltype(; frontend=frontend, param...)
 
     # Simulate responses and plot
-    sim = NoiseMTF(model, 8.0, 512.0, 31; l=20.0)
-    out = @memo Default() simulate(sim)
-    ax = plot_mtf!(ax, axis(sim), out, zeros(size(out)); color=parse(RGBA, :black))
+    sim = ToneMTF(model, 4.0, 512.0, 31; l=40.0, dur=1.0, f=cf)
+    # sim = NoiseMTF(model, 4.0, 512.0, 31; l=10.0, dur=1.0)
+    out = @memo Default(; resolve_codename=true, codename="october") simulate(sim)
+    ax = plot_mtf!(ax, axis(sim), normfunc(out), zeros(size(out)); color=color, kwargs...)
     ylims!(ax, 0.0, 1.25 * maximum(out))
 
     # Return
     ax 
+end
+
+"""
+    genfig_sim_methods_mtf_filterbank()
+
+Plot noise modulation transfer functions (MTFs) for each supplementary IC cell 
+
+Simulate and plot MTFs for supplemental IC cells at a nominal CF of 2 kHz using Guassian
+noise modulated at a modulation depth of 0 dB using a sinusoidal modulator. Sound level of 
+the noise is in dB SPL spectrum level and is 20 dB SPL. 
+"""
+function genfig_sim_methods_mtf_filterbank()
+    # Set theme and other visual features
+    set_theme!(theme_carney; fontsize=10.0, Scatter=(markersize=3.0, ))
+
+    # Create figure and axes for each MTF
+    #fig = Figure(; resolution=(350, 200))
+    fig = Figure(; resolution=(700, 400))
+    axs = [Axis(fig[1, i]; xscale=log10, xticks=(2 .^ (1:2:9), string.(2 .^ (1:2:9))), xminorticksvisible=false) for i in 1:2]
+
+    # Do each individual plot
+    plot_model_mtf!(axs[1], 2000.0, InferiorColliculusSFIEBE, LowBE; color=:red, label_bmf=true, normfunc=x -> x ./ maximum(x))
+    plot_model_mtf!(axs[1], 2000.0, InferiorColliculusSFIEBE, StandardBE; color=:blue, label_bmf=true, normfunc=x-> x ./ maximum(x))
+    plot_model_mtf!(axs[1], 2000.0, InferiorColliculusSFIEBE, HighBE; color=:green, label_bmf=true, normfunc=x -> x ./ maximum(x))
+    ylims!(axs[1], 0.0, 1.5)
+
+    # Do each individual plot
+    plot_model_mtf!(axs[2], 2000.0, InferiorColliculusSFIEBS, LowBS; color=:red, label_wmf=true, normfunc=x -> x ./ minimum(x))
+    plot_model_mtf!(axs[2], 2000.0, InferiorColliculusSFIEBS, StandardBS; color=:blue, label_wmf=true, normfunc=x -> x ./ minimum(x))
+    plot_model_mtf!(axs[2], 2000.0, InferiorColliculusSFIEBS, HighBS; color=:green, label_wmf=true, normfunc=x -> x ./ minimum(x))
+    ylims!(axs[2], 0.0, 5.0)
+
+    # Add labels
+    axs[1].ylabel = "Firing rate (sp/s)"
+    Label(fig[2, 1:end], "Modulation frequency (Hz)"; tellwidth=false)
+    rowgap!(fig.layout, 1, Relative(0.03))
+    colgap!(fig.layout, Relative(0.02))
+    fig
 end
 
 """
