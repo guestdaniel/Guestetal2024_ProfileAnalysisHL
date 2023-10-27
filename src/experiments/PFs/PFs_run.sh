@@ -10,7 +10,7 @@
 module load hdf5
 module load git
 module load matlab
-module load julia
+# module load julia
 
 # Print current time
 now=$(date +"%T")
