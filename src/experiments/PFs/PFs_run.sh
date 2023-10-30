@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --partition=standard
-#SBATCH --cpus-per-task=32
-#SBATCH --mem-per-cpu=2G
+#SBATCH --cpus-per-task=30
+#SBATCH --mem-per-cpu=2.5G
 #SBATCH --time=96:00:00 
 #SBATCH --output=/home/dguest2/ProfileAnalysis.log
 #SBATCH --mail-type=ALL
@@ -18,7 +18,7 @@ echo "Start time : $now"
 
 # Run script
 cd ~/cl_code/ProfileAnalysis/src/experiments/PFs
-julia -p 30 PFs_run.jl
+julia -p 28 PFs_run.jl
 
 # Print current time
 now=$(date +"%T")
