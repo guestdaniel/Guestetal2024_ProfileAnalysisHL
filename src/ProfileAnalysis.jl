@@ -40,6 +40,7 @@ include(joinpath("experiments", "PFs", "PFs_postprocess.jl"))
 
 # Figure code
 #include("genfigs.jl")
+include(joinpath("figures", "fig_intro.jl"))
 include(joinpath("figures", "fig_beh_1kHz.jl"))
 include(joinpath("figures", "fig_beh_frequency.jl"))
 include(joinpath("figures", "fig_beh_hearing_loss.jl"))

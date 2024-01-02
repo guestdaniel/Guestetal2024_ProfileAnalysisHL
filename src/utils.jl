@@ -96,6 +96,14 @@ total_to_comp(x, n) = 10 * log10(10^(x/10)/n)
 function modelstr(model::Model)
     if typeof(model) == AuditoryNerveZBC2014
         string(typeof(model)) * "_" * model.fiber_type
+    elseif typeof(model) == InferiorColliculusSFIE_Multiunit
+        if length(model.units_be) == 3
+            "InferiorColliculusSFIE_Multiunit_BEFilterbank"
+        elseif length(model.units_bs) == 3
+            "InferiorColliculusSFIE_Multiunit_BSFilterbank"
+        elseif (length(model.units_be) == 1) & (length(model.units_bs) == 1)
+            "InferiorColliculusSFIE_Multiunit_BEBSOpponent"
+        end
     else
         string(typeof(model))
     end

@@ -50,7 +50,7 @@ There are two manual steps that involve interacting with the `\\nsc-lcarney-h1` 
 
 Next we have automated steps that preprocess, clean, and compile the data.
 1. Run `workflows\behavioral_data\01_extract_data_mat_to_excel.m` to extract all data from the source `.mat` files to more accessible `.xlsx` files. Both `AuditoryStimulus` and `behavior_code` folders must be on the path (these folders contain various `.m` files needed to properly parse the contents of the `.mat` files containing the data).
-2. Run `workflows\behavioral_data\02_convert_audiograms_to_csv.m` to convert the `.mat` file containing subject info and audiograms into a `.csv` file
+2. Run `workflows\behavioral_data\02_convert_audiograms_to_csv.m` to convert the `.mat` file containing subject info and audiograms into a `.csv` file. This CSV file is then manually copied as `audiometry.csv` and placed into the `data\int_pro` folder for later use. Note that audiogram data for one subject (S198) has been manually added as the last row of this CSV.
 3. Run `workflows\behavioral_data\03_compile_data.R` to compile raw block-wise data from `.xlsx` files into a single tidy format.
 
 Next, we extract thresholds from the raw data in Julia and then analyze those thresholds in R.

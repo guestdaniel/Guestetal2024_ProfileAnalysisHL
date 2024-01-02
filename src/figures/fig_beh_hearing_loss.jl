@@ -51,7 +51,7 @@ function genfig_beh_hearing_loss()
             yticks=-20:10:10,
         )
     end
-    ylims!.(axs, -20.0, 15.0)
+    ylims!.(axs, -20.0, 20.0)
     xlims!.(axs, -15.0, 90.0)
     neaten_grid!(axs)
 
@@ -61,7 +61,7 @@ function genfig_beh_hearing_loss()
             # Calculate SL cutoff and plot
             level_per_component = total_to_comp(70.0, n_comp)
             level_per_component_in_hl = spl_to_hl(level_per_component, freq)
-            band!(axs[idx_n_comp, idx_freq], [level_per_component_in_hl, 90.0], [-20, -20], [15, 15]; color=HSL(0.0, 0.5, 0.95))
+            band!(axs[idx_n_comp, idx_freq], [level_per_component_in_hl, 90.0], [-20, -20], [20, 20]; color=HSL(0.0, 0.5, 0.95))
 
             # Summarize data and plot
             for (idx_group, group) in enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])

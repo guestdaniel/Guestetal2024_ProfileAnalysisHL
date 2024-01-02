@@ -13,12 +13,14 @@ summary = @chain df begin
         :hl = mean(:hl),
     )
     @transform(:threshold_spl = hl_to_spl.(:hl, :freq))
-    @transform(:warning = :threshold_spl .> 60.0)
+    @transform(:warning_roved = :threshold_spl .> 60.0)
+    @transform(:warning_unroved = :threshold_spl .> 70.0)
+    @transform(:warning_unroved_per_comp = :threshold_spl .> total_to_comp.(70.0, 37))
     @orderby(:subj, :freq)
 end
 
 warnings = map([500, 1000, 2000, 4000]) do freq
-    summary[summary.freq .== freq, :warning]
+    summary[summary.freq .== freq, :warning_unroved_per_comp]
 end
 
 fig = Figure()

@@ -15,7 +15,7 @@ subj_ids = subj_ids[subj_ids != "S000"]  # test subject, not real
 subj_ids = subj_ids[subj_ids != "S192"]  # does not have 3 full runs for each condition
 
 # Pull subject audiogram data
-audiograms = read.csv(path_audiograms)
+audiograms = read.csv(file.path(dir_data_clean, "audiometry.csv"))
 audiograms[audiograms$Subject == "S98", "Subject"] = "S098"
 
 # Loop through each subject and extract data

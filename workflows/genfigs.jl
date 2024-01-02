@@ -1,4 +1,12 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Figure 0 // intro
+#
+# Shows audiometric data for participants
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fig = genfig_subj_audiograms()
+save(projectdir("plots", "intro", "intro.svg"), fig)
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Figure 1 // beh_1kHz
 # Behavior at 1 kHz
 #
@@ -9,6 +17,9 @@
 # Generate psychometric functions
 fig = genfig_beh_1kHz_psychometric_functions()
 save(projectdir("plots", "beh_1kHz", "01_psychometric_functions.svg"), fig)
+
+fig = genfig_beh_1kHz_psychometric_functions_v2()
+save(projectdir("plots", "beh_1kHz", "01_psychometric_functions_v2.svg"), fig)
 
 # Generate bowls
 fig = genfig_beh_1kHz_bowls()
