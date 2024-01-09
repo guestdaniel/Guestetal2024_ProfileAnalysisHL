@@ -304,7 +304,7 @@ function genfig_beh_1kHz_bowls()
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
 
     # Filter data only to include relevant subsections (1 kHz data)
-    df = @subset(df, :freq .== 1000)
+    df = @subset(df, :freq .== 1000, :include .== true)
 
     # Summarize as function of number of components and group
     df_summary = @chain df begin
@@ -380,17 +380,17 @@ function genfig_beh_1kHz_rove_effects()
     # Summarize as function of number of components and group
     df_ind = @chain df begin
         # Select only what we need
-        @select(:rove, :n_comp, :hl_group, :subj, :threshold)
+        @select(:rove, :n_comp, :hl_group, :subj, :threshold, :include)
 
         unstack(:rove, :threshold)
 
     end
-    df_ind[!, :diff] .= df_ind[:, 5] .- df_ind[:, 4]
+    df_ind[!, :diff] .= df_ind[:, 6] .- df_ind[:, 5]
     df_ind = df_ind[completecases(df_ind), :]
 
     df_summary = @chain df_ind begin
         # Group by rove, component count, and group
-        groupby([:n_comp, :hl_group])
+        groupby([:n_comp, :hl_group, :include])
 
         # Summarize
         @combine(
@@ -422,13 +422,15 @@ function genfig_beh_1kHz_rove_effects()
     # Loop through combinations of component spacing (rows) and rove (columns), plot data
     for (idx_group, group) in enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])
         # Subset means and filled data
-        sub = @subset(df_summary, :hl_group .== group)
-        ind = @subset(df_ind, :hl_group .== group)
+        sub = @subset(df_summary, :hl_group .== group, :include .== true)
+        ind = @subset(df_ind, :hl_group .== group, :include .== true)
+        ind_excl = @subset(df_ind, :hl_group .== group, :include .== false)
 
         # Plot bowl
         errorbars!(axs[idx_group], sub.n_comp, sub.diff, 1.96 .* sub.stderr; color=color_group(group))
         scatter!(axs[idx_group], sub.n_comp, sub.diff; color=color_group(group), marker=:utriangle)
-        scatter!(axs[idx_group], ind.n_comp .+ 2, ind.diff; color=color_group(group), markersize=fig_defaults["markersize"]/3, marker=:utriangle)
+        scatter!(axs[idx_group], ind.n_comp .+ 2, ind.diff; color=color_group(group), markersize=fig_defaults["markersize"]/1.4, marker=:utriangle)
+        scatter!(axs[idx_group], ind_excl.n_comp .+ 2, ind_excl.diff; color=:gray, markersize=fig_defaults["markersize"]/1.4, marker=:xcross)
     end
 
     # Adjust spacing
