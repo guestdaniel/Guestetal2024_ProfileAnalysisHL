@@ -22,7 +22,7 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple()
 
     # Fetch relevant behavioral data and average across listeners/repeats
     beh = @chain fetch_behavioral_data() begin
-        @subset(:hl_group .== "< 5 dB HL")
+        @subset(:hl_group .== "< 5 dB HL", :include .== true)
         avg_behavioral_data()
     end
 
@@ -106,7 +106,7 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple_extended()
 
     # Fetch relevant behavioral data and average across listeners/repeats
     beh = @chain fetch_behavioral_data() begin
-        @subset(:hl .< 5.0) 
+        @subset(:hl .< 5.0, :include .== true) 
         # Group by freq, component count, and group
         groupby([:freq, :n_comp, :rove])
 
@@ -198,7 +198,7 @@ function genfig_sim_bowls_frequency_summary()
 
     # Fetch relevant behavioral data and average across listeners/repeats
     beh = @chain fetch_behavioral_data() begin
-        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+        @subset(:rove .== "fixed level", :hl_group .== "< 5 db hl", :include .== true)
         avg_behavioral_data()
     end
 
