@@ -16,7 +16,7 @@ function genfig_beh_frequency_psychometric_functions()
     df = DataFrame(CSV.File(datadir("int_pro", "data_postproc.csv")))
 
     # Filter data only to include relevant subsections (1 kHz data)
-    df = @subset(df, :rove .== "fixed level")
+    df = @subset(df, :rove .== "fixed level", :include .== true)
 
     # Calculate means in each condition and store in dataframe
     df_mean = @chain df begin
@@ -43,17 +43,27 @@ function genfig_beh_frequency_psychometric_functions()
         )
     end
 
-    # Fit psychometric functions and store in results in dataframe
-    df_fitted = @chain df_mean begin
-        # Group by freq, component count, and group
-        groupby([:freq, :n_comp, :hl_group])
+    # Fetch psychometric functions from pre-computed dataframe
+    thresholds = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
+    thresholds = @subset(thresholds, :rove .== "fixed level", :include .== true)
+    df_fitted = @chain thresholds begin
+        # Group by rove, component count, and group
+        groupby([:freq, :n_comp, :hl_group, :subj, :include])
 
-        # Fit logistic function to data
-        @combine(:fit = fit_psychometric_function(:increment, :μ))
+        # Get one threshold and slope number per subject
+        @combine(
+            :threshold = mean(:threshold),
+            :slope = mean(:slope),
+        )
 
-        # Extract slope and threshold
-        @transform(:threshold = getindex.(getfield.(:fit, ^(:param)), 1))
-        @transform(:slope = getindex.(getfield.(:fit, ^(:param)), 2))
+        # Ungroup by subj
+        groupby([:freq, :n_comp, :hl_group, :include])
+
+        # Average threshold and slopes across subjects
+        @combine(
+            :threshold = mean(:threshold),
+            :slope = mean(:slope),
+        )
     end
 
     # Expand each row of df_fitted into interpolated datapoints  
@@ -139,7 +149,7 @@ function genfig_beh_frequency_bowls()
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
 
     # Filter data only to include relevant subsections (1 kHz data)
-    df = @subset(df, :rove .== "fixed level")
+    df = @subset(df, :rove .== "fixed level", :include .== true)
 
     # Summarize as function of number of components and group
     df_summary = @chain df begin
