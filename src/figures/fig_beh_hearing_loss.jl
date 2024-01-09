@@ -66,17 +66,19 @@ function genfig_beh_hearing_loss()
             # Summarize data and plot
             for (idx_group, group) in enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])
                 # Subset data
-                sub = @subset(df, :n_comp .== n_comp, :freq .== freq, :hl_group .== group)
+                sub = @subset(df, :n_comp .== n_comp, :freq .== freq, :hl_group .== group, :include .== true)
+                sub_excl = @subset(df, :n_comp .== n_comp, :freq .== freq, :hl_group .== group, :include .== false)
 
                 # Plot curve fit
                 scatter!(axs[idx_n_comp, idx_freq], sub.hl, sub.threshold; color=color_group(group))
+                scatter!(axs[idx_n_comp, idx_freq], sub_excl.hl, sub_excl.threshold; color=:gray, marker=:xcross)
             end
 
-            # Fit regression to pooled data and plot
-            sub = @subset(df, :n_comp .== n_comp, :freq .== freq)
+            # Fit regression to pooled data and plot (only use "legal" rows)
+            sub = @subset(df, :n_comp .== n_comp, :freq .== freq, :include .== true)
             x̂, ŷ = fit_lm(sub)
-            matches_signif = any(map(x -> (x[1] == n_comp) & (x[2] == freq), significant))
-            if !matches_signif
+            sig = CorrelationTest(sub.hl, sub.threshold)
+            if pvalue(sig) > 0.05
                 lines!(axs[idx_n_comp, idx_freq], x̂, ŷ; color=:black, linestyle=:dash)
             else
                 lines!(axs[idx_n_comp, idx_freq], x̂, ŷ; color=:black, linestyle=:solid)
