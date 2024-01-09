@@ -161,20 +161,20 @@ function genfig_beh_1kHz_psychometric_functions_v2()
     # Calculate means in each condition and store in dataframe
     df_mean = @chain df begin
         # Group by rove, increment, component count, group, and subject
-        groupby([:rove, :increment, :n_comp, :hl_group, :subj])
+        groupby([:rove, :increment, :n_comp, :hl_group, :subj, :include])
 
         # Calculate means (in each condition, for each subject)
         @combine(:μ = mean(:pcorr))
 
         # Group by rove, increment, component count, and group
-        groupby([:rove, :increment, :n_comp, :hl_group])
+        groupby([:rove, :increment, :n_comp, :hl_group, :include])
 
         # Filter out places where we have too little data (we want at least 2 subjects at each point)
         transform(:μ => (x -> length(x)) => :count)
         @subset(:count .> 2)
 
         # Group again
-        groupby([:rove, :increment, :n_comp, :hl_group])
+        groupby([:rove, :increment, :n_comp, :hl_group, :include])
 
         # Compute μ and stderr
         @combine(
@@ -183,12 +183,12 @@ function genfig_beh_1kHz_psychometric_functions_v2()
         )
     end
 
-    # Fit psychometric functions and store in results in dataframe
+    # Fetch psychometric functions from pre-computed dataframe
     thresholds = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
     thresholds = @subset(thresholds, :freq .== 1000)
     df_fitted = @chain thresholds begin
         # Group by rove, component count, and group
-        groupby([:rove, :n_comp, :hl_group, :subj])
+        groupby([:rove, :n_comp, :hl_group, :subj, :include])
 
         # Get one threshold and slope number per subject
         @combine(
@@ -197,7 +197,7 @@ function genfig_beh_1kHz_psychometric_functions_v2()
         )
 
         # Ungroup by subj
-        groupby([:rove, :n_comp, :hl_group])
+        groupby([:rove, :n_comp, :hl_group, :include])
 
         # Average threshold and slopes across subjects
         @combine(
@@ -242,8 +242,8 @@ function genfig_beh_1kHz_psychometric_functions_v2()
         for (idx_group, group) in enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])
             for (idx_rove, (rove, marker)) in enumerate(zip(["fixed level", "roved level"], [:circle, :rect]))
                 # Subset means and filled data
-                mean_sub = @subset(df_mean, :n_comp .== n_comp, :rove .== rove, :hl_group .== group)
-                filled_sub = @subset(df_filled, :n_comp .== n_comp, :rove .== rove, :hl_group .== group)
+                mean_sub = @subset(df_mean, :n_comp .== n_comp, :rove .== rove, :hl_group .== group, :include .== true)
+                filled_sub = @subset(df_filled, :n_comp .== n_comp, :rove .== rove, :hl_group .== group, :include .== true)
 
                 # Plot curve fit
                 lines!(axs[idx_n_comp, idx_group], filled_sub.increment, filled_sub.pcorr; color=color_group(group))
@@ -263,8 +263,8 @@ function genfig_beh_1kHz_psychometric_functions_v2()
 
                 # Plot thresholds with small markers below psychometric functions
                 offset = 0.35
-                fitted_fixed = @subset(df_fitted, :n_comp .== n_comp, :rove .== "fixed level", :hl_group .== group)
-                fitted_roved = @subset(df_fitted, :n_comp .== n_comp, :rove .== "roved level", :hl_group .== group)
+                fitted_fixed = @subset(df_fitted, :n_comp .== n_comp, :rove .== "fixed level", :hl_group .== group, :include .== true)
+                fitted_roved = @subset(df_fitted, :n_comp .== n_comp, :rove .== "roved level", :hl_group .== group, :include .== true)
                 lines!(axs[idx_n_comp, idx_group], [fitted_fixed.threshold[1], fitted_roved.threshold[1]], [offset, offset]; color=color_group(group))
                 scatter!(axs[idx_n_comp, idx_group], fitted_fixed.threshold, [offset]; marker=:circle, color=color_group(group))
                 scatter!(axs[idx_n_comp, idx_group], fitted_roved.threshold, [offset]; marker=:rect, color=color_group(group))

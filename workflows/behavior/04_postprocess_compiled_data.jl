@@ -29,6 +29,9 @@ df = @chain df begin
     @transform(:audio_threshold_spl = hl_to_spl.(:hl, Float64.(:freq)))
     # Add a column indicating the SL of the tones
     @transform(:sl = :level_per_component .- :audio_threshold_spl)
+    # Add a column indicating whether the present row is "legal" data according to our 
+    # inclusion criteria
+    @transform(:include = :sl .> 0.0)
 end
 
 # Save to disk

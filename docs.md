@@ -2,12 +2,11 @@
 
 # Introduction
 
-# Files and paths
-## Behavioral procedure
-Behavior was conducted in the human testing space of the Carney lab (URMC ???, University of Rochester, Rochester NY).
+# Behavioral procedure
+Behavior was conducted in the human testing space of the Carney lab (University of Rochester Medical Center, Rochester NY).
 The primary experimenters were Evie Feld and David Cameron.
 
-
+# Files and paths
 ## Behavioral data
 Behavioral data are stored in the `data` folder.
 Processed internal data is stored in `data/int_pro`.
@@ -40,9 +39,9 @@ These files have the following columns:
 
 # Workflows
 
-## Behavioral data workflow
+## Behavioral data workflow (internal)
+This section describes the behavioral data workflow steps that are *internal* to the Carney lab (i.e., they are irrelevant for anyone without access to the raw data).
 Behavioral data for the profile-analysis experiments are stored on `\\nsc-lcarney-h1\C$`.
-The workflow for updating behavioral data and preparing cleaned and pre-processed copies is described below.
 There are two manual steps that involve interacting with the `\\nsc-lcarney-h1` machine.
 
 1. First, remove any files/folders in `C:\Users\dguest2\cl_data\pahi\raw\profile_analysis_iso_results` to ensure we have a clean slate for a local copy of the data.
@@ -53,7 +52,9 @@ Next we have automated steps that preprocess, clean, and compile the data.
 2. Run `workflows\behavioral_data\02_convert_audiograms_to_csv.m` to convert the `.mat` file containing subject info and audiograms into a `.csv` file. This CSV file is then manually copied as `audiometry.csv` and placed into the `data\int_pro` folder for later use. Note that audiogram data for one subject (S198) has been manually added as the last row of this CSV.
 3. Run `workflows\behavioral_data\03_compile_data.R` to compile raw block-wise data from `.xlsx` files into a single tidy format.
 
-Next, we extract thresholds from the raw data in Julia and then analyze those thresholds in R.
+## Behavioral data workflow (external)
+This section describes behavioral data workflow steps that are relevant to anyone with the partially preprocessed behavioral data files available in `data\int_pro`. 
+We extract thresholds from the raw data in Julia and then analyze those thresholds in R.
 1. Run `workflows\behavioral_data\04_postprocess_compiled_data.jl` to add additional useful columns to the behavioral data (e.g., levels in terms of sensational level)
 2. Run `workflows\behavioral_data\05_extract_thresholds.jl` to fit logistic curves to behavioral data on the individual-listener level in each condition and save to resulting thresholds and slopes to disk.
 3. Run `workflows\behavioral_data\06_evaluate_threshold_fits.jl` to generate plots showing the correspondence between the raw proportion correct data and the fitted curves.
@@ -97,7 +98,7 @@ template-based simulations, implemented via the disk-memoized caching system pro
 
 ### Running simulations
 Simulations can be run as above using `run(exp)`, but practically we rarely do this directly.
-Instead, we first set up an environment on BlueHive and then run the simulations in a batch mode.
+Instead, we first set up an environment on CIRC's BlueHive and then run the simulations in a batch mode.
 This is achieved by submitting `PFs_run.sh` using `sbatch`. 
 This script uses ~30 worker processes for long stretches of time to run `PFs_run.jl`, a script that sets up each worker process' environemnt and simulates each of the above experiments.
 The results of this process can be downloaded to local machies using the Julia function `synchronize_cache`.
