@@ -354,7 +354,7 @@ function genfig_sim_hi_bowls(freq=1000.0)
     beh = @chain fetch_behavioral_data() begin
         # Subset to only include unroved data at 1 and 2 kHz for available subjs
         @subset(in.(:freq, Ref([1000.0, 2000.0])))
-        @subset(:rove .== "fixed level")  # see comment above re: simulations
+        @subset(:rove .== "fixed level", :include .== true)  # see comment above re: simulations
 
         # Group by target frequency, number of components, and subject
         groupby([:freq, :n_comp, :hl_group, :subj])

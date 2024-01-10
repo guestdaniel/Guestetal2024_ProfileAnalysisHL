@@ -10,7 +10,7 @@ end
 #run(ProfileAnalysis_PFTemplateObserver())
 
 # Run hearing-impaired simulations 
-#run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
+run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
 
 # Run wideband control simulations
 #run(ProfileAnalysis_PFTemplateObserver_WidebandControl())
@@ -19,4 +19,4 @@ end
 #run(ProfileAnalysis_PFTemplateObserver_PureToneControl())
 
 # Run additional models (opponent BE-BS, BE filterbank, BS filterbank)
-run(ProfileAnalysis_PFTemplateObserver_Extended())
+#run(ProfileAnalysis_PFTemplateObserver_Extended())
