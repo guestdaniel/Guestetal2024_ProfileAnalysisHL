@@ -1,6 +1,6 @@
 export logistic, logistic_fit, logistic_predict, hearing_group, hl_offsets,
     hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function, modelstr,
-    variance_explained, get_hl_colors, color_group, fetch_behavioral_data,
+    variance_explained, get_hl_colors, color_group, marker_group, fetch_behavioral_data,
     avg_behavioral_data, fetch_audiograms, quickfitlm, pick_marker
 
 """
@@ -151,6 +151,17 @@ function color_group(group::Float64)
         hl_colors[2]
     else
         hl_colors[3]
+    end
+end
+
+# Function to map from threshold to corresponding color 
+function marker_group(group::Float64)
+    if group < 5
+        :circle
+    elseif (group >= 5) & (group <= 15)
+        :utriangle
+    else
+        :cross
     end
 end
 

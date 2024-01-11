@@ -36,6 +36,7 @@ function genfig_subj_audiograms()
             freqs,
             θ,
             color=color_group.(θ),
+            marker=marker_group.(θ),
         )
     end
 

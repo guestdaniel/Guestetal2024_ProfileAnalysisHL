@@ -64,7 +64,7 @@ function genfig_sim_bowls_puretonecontrol_LSR_only()
     # Set up figure
     set_theme!(theme_carney)
     fig = Figure(; resolution=(300, 200))
-    ax = Axis(fig[1, 1]; xticklabelrotation=π/2, xminorticksvisible=false)
+    ax = Axis(fig[1, 1]; xticklabelrotation=π/2, xminorticksvisible=false, xticklabelsize=9.0)
 
     # Plot red-dashed control line for θ_energy
     hlines!(ax, [θ_e]; color=:red, linestyle=:dash)

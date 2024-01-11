@@ -150,7 +150,7 @@ function genfig_sim_hi_behavior_correlations()
     end
 
     # Set up figure
-    set_theme!(theme_carney)
+    set_theme!(theme_carney; fontsize=13.0)
     fig = Figure(; resolution=(350, 475))
     axs = [Axis(fig[i, j]) for i in 1:3, j in 1:2]
 
@@ -294,7 +294,7 @@ function genfig_sim_hi_cohc_correlations()
     ])
 
     # Set up figure
-    set_theme!(theme_carney)
+    set_theme!(theme_carney; fontsize=13.0)
     fig = Figure(; resolution=(350, 475))
     axs = [Axis(fig[i, j]) for i in 1:3, j in 1:2]
 
@@ -352,7 +352,7 @@ function genfig_sim_hi_cohc_correlations()
     neaten_grid!(axs)
 
     # Set limits and ticks
-    ylims!.(axs, -45.0, 25.0)
+    ylims!.(axs, -40.0, 25.0)
     xlims!.(axs, -3.0, 40.0)
     # [ax.xticks = 0.0:0.25:0.75 for ax in axs]
     [ax.yticks = -30.0:10.0:20.0 for ax in axs]
@@ -407,9 +407,9 @@ function genfig_sim_hi_bowls(freq=1000.0)
     end
 
     # Configure plotting parameters and set up plot
-    set_theme!(theme_carney)
+    set_theme!(theme_carney; fontsize=13.0)
     fig = Figure(; resolution=(600, 450))
-    axs = [Axis(fig[i, j]; xminorticksvisible=false) for i in 1:3, j in 1:2]
+    axs = [Axis(fig[i, j]; xminorticksvisible=false, xticklabelrotation=π/2) for i in 1:3, j in 1:2]
 
     # Loop through combinations of component spacing (rows) and rove (columns), plot data
     # Loop over different combinations of observer ("mode") and model stage

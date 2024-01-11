@@ -28,7 +28,7 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple()
 
     # Set up figure (3x2 design)
     set_theme!(theme_carney; fontsize=13.0)
-    fig = Figure(; resolution=(600, 450))
+    fig = Figure(; resolution=(650, 450))
     axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:2]
 
     # Loop over all combinations of observer ("mode") and model
