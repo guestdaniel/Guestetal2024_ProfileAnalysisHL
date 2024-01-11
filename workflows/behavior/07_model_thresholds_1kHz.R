@@ -18,15 +18,16 @@ thresholds = as.data.frame(read.csv(file.path(dir_data_clean, "thresholds.csv"))
 thresholds$n_comp = factor(thresholds$n_comp)
 thresholds$condition = factor(thresholds$condition)
 thresholds$freq = factor(thresholds$freq)
+thresholds$include = thresholds$include == "true"
 
 # Subset data
-thresholds = thresholds[thresholds$freq == "1000", ]
+thresholds = thresholds[(thresholds$freq == "1000") & (thresholds$include == TRUE), ]
 
 # Fit lme model
 mod = lmer(threshold ~ n_comp*rove*hl + (1|subj), data=thresholds)
 
 # Evaluate with ANOVA
-Anova(mod, test="F")
+Anova(mod, test="F", type=3)
 
 # Evaluate marginal means with phia
 plot(interactionMeans(mod, covariates=c(hl=-10.0)))
@@ -45,15 +46,6 @@ t1 = testInteractions(
     test="F"
 )
 
-# Evaluate significance of component spacing simple main effect @ mean HL
-t2 = testInteractions(
-    mod, 
-    pairwise="n_comp", 
-    fixed="rove", 
-    adjustment="none",
-    test="F"
-)
-
 # Significant n_comp:rove, so we want to test effect of rove as function of n_comp @ mean HL
 t3 = testInteractions(
     mod, 
@@ -68,25 +60,26 @@ t4 = testInteractions(
     adjustment="none",
     test="F"
 )
+t4 = t4[1:4, ]
 
 # Significant n_comp:hl interaction, so evaluate significance of HL slope in each n_comp
-t5 = testInteractions(
-    mod, 
-    fixed="n_comp", 
-    slope="hl",
-    adjustment="none",
-    test="F"
-)
+# t5 = testInteractions(
+#     mod, 
+#     slope="hl",
+#     adjustment="none",
+#     test="F"
+# )
 t6 = testInteractions(
     mod, 
     pairwise="n_comp", 
     slope="hl",
     adjustment="none",
     test="F"
-)[5:7, ]
+)
+t6 = t6[c(3, 4, 6, 7), ]
 
 # Place all tests in list, extract pvals for correction
-tests = list(t1, t2, t3, t4, t5, t6)
+tests = list(t1, t3, t4, t6)
 pvals = c()
 n_tests = c()
 for (idx_test in seq_along(tests)) {
@@ -107,6 +100,6 @@ for (idx_test in seq_along(tests)) {
     # Determine indices
     idx_low = n_tests_so_far + 1
     idx_high = n_tests_so_far + n_tests[idx_test]
-    tests[[idx_test]][idx_low:idx_high, "Pr(>F)"] = pvals[idx_low:idx_high]
+    tests[[idx_test]][1:n_tests[idx_test], "Pr(>F)"] = pvals[idx_low:idx_high]
     n_tests_so_far = n_tests_so_far + n_tests[idx_test]
 }

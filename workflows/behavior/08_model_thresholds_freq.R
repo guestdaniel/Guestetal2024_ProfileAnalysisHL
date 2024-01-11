@@ -12,9 +12,10 @@ thresholds = as.data.frame(read.csv(file.path(dir_data_clean, "thresholds.csv"))
 thresholds$n_comp = factor(thresholds$n_comp)
 thresholds$condition = factor(thresholds$condition)
 thresholds$freq = factor(thresholds$freq)
+thresholds$include = thresholds$include == "true"
 
 # Subset data
-thresholds = thresholds[thresholds$condition != "1000 Hz roved level", ]
+thresholds = thresholds[(thresholds$condition != "1000 Hz roved level") & (thresholds$include == TRUE), ]
 
 # Fit lme model
 mod = lmer(threshold ~ n_comp*freq*hl + (1|subj), data=thresholds)

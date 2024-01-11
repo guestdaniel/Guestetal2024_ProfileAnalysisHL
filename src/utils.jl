@@ -169,7 +169,7 @@ function fetch_audiograms()
     if (Sys.KERNEL == :Linux)
         audiograms = DataFrame(CSV.File("/home/dguest2/audiometry.csv"))
     else
-        audiograms = DataFrame(CSV.File(projectdir("data/int_pro/audiometry.csv")))
+        audiograms = DataFrame(CSV.File(projectdir("data", "int_pro", "audiometry.csv")))
     end
     audiograms[audiograms.Subject .== "S98", :Subject] .= "S098"
 
