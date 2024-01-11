@@ -21,7 +21,7 @@ thresholds = thresholds[(thresholds$condition != "1000 Hz roved level") & (thres
 mod = lmer(threshold ~ n_comp*freq*hl + (1|subj), data=thresholds)
 
 # Evaluate with ANOVA
-Anova(mod, test="F")
+Anova(mod, test="F", type=3)
 
 # Evaluate frequency simple main effect
 t1 = testInteractions(
