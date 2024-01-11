@@ -27,7 +27,7 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple()
     end
 
     # Set up figure (3x2 design)
-    set_theme!(theme_carney)
+    set_theme!(theme_carney; fontsize=13.0)
     fig = Figure(; resolution=(600, 450))
     axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:2]
 
@@ -50,16 +50,18 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple()
 
             # Plot bowls with scatters and lines, using solid + circles for fixed-level and 
             # dashed + squares for roved-level
-            scatter!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
             lines!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
+            scatter!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
             if nrow(beh_roved) > 0
-                scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, marker=:rect)
                 lines!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, marker=:rect, linestyle=:dash)
+                scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, marker=:rect)
+                scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:white, marker=:rect, markersize=4.0)
             end
-            scatter!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=:red)
             lines!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=:red)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=:red)
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:red, linestyle=:dash)
             scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:red, marker=:rect)
-            lines!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:red, marker=:rect, linestyle=:dash)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:white, marker=:rect, markersize=4.0)
         end
 
         # Manually set x-axis ticks and labels
@@ -74,8 +76,8 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple()
     end
     
     # Add superlabels to x/y-axes
-    Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2); colgap!(fig.layout, 1, Relative(0.01));
-    Label(fig[4, 1:2], "Number of components // Target frequency (Hz)"); rowgap!(fig.layout, 3, Relative(0.05));
+    Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2, fontsize=15.0); colgap!(fig.layout, 1, Relative(0.01));
+    Label(fig[4, 1:2], "Number of components // Target frequency (Hz)"; fontsize=15.0); rowgap!(fig.layout, 3, Relative(0.05));
 
     # Adjust colgaps and neaten grid
     neaten_grid!(axs)
@@ -203,8 +205,8 @@ function genfig_sim_bowls_frequency_summary()
     end
 
     # Set up figure (3x2 design)
-    set_theme!(theme_carney)
-    fig = Figure(; resolution=(200, 250))
+    set_theme!(theme_carney; fontsize=18.0)
+    fig = Figure(; resolution=(360, 400))
     axs = [Axis(fig[i, j]; xminorticksvisible=false) for i in 1:3, j in 1:2]
 
     # Loop over all combinations of mode and model
@@ -226,10 +228,10 @@ function genfig_sim_bowls_frequency_summary()
         end
 
         # Plot curves with markers + lines, using red for simulated and black for real data
-        scatter!(ax, 1.0:1.0:4.0, df_subset.θ; color=:red)
-        lines!(ax, 1.0:1.0:4.0, df_subset.θ; color=:red)
-        scatter!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=:black)
-        lines!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=:black)
+        scatter!(ax, 1.0:1.0:4.0, df_subset.θ; color=:red, markersize=10.0)
+        lines!(ax, 1.0:1.0:4.0, df_subset.θ; color=:red, linewidth=2.0)
+        scatter!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=:black, markersize=10.0)
+        lines!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=:black, linewidth=2.0)
 
         # Manually set x-axis ticks
         ax.xticks = (
@@ -248,7 +250,7 @@ function genfig_sim_bowls_frequency_summary()
 
     # Adjust colgaps and neaten grid
     neaten_grid!(axs)
-    colgap!(fig.layout, 2, Relative(0.01))
+    colgap!(fig.layout, 2, Relative(0.05))
     rowgap!(fig.layout, 1, Relative(0.01))
     rowgap!(fig.layout, 2, Relative(0.01))
 
@@ -281,8 +283,8 @@ function genfig_sim_bowls_modelbehavior_scatterplots()
     end
 
     # Set up figure
-    set_theme!(theme_carney)
-    fig = Figure(; resolution=(200, 250))
+    set_theme!(theme_carney; fontsize=18.0)
+    fig = Figure(; resolution=(360, 400))
     axs = [Axis(fig[i, j]; xminorticksvisible=false) for i in 1:3, j in 1:2]
 
     # Loop over all combinations of mode and model
@@ -295,7 +297,7 @@ function genfig_sim_bowls_modelbehavior_scatterplots()
         end
 
         # Scatter each dataset
-        scatter!(ax, beh.threshold, df_subset.θ; color=:black, marker=pick_marker.(beh.freq))
+        scatter!(ax, beh.threshold, df_subset.θ; color=:black, marker=pick_marker.(beh.freq), markersize=10.0)
 
         # Fit lm 
         temp = DataFrame(behavior=beh.threshold, model=df_subset.θ)
@@ -304,7 +306,7 @@ function genfig_sim_bowls_modelbehavior_scatterplots()
         x̂ = -30.0:0.1:10.0
         β₀ = coef(m)[1]
         β = coef(m)[2]
-        lines!(ax, x̂, β₀ .+ x̂ .* β; color=:gray)
+        lines!(ax, x̂, β₀ .+ x̂ .* β; color=:gray, linewidth=2.0)
         text!(ax, [-30.0], [0.0]; text=string(varexp))
 
         # Set limits
@@ -320,7 +322,7 @@ function genfig_sim_bowls_modelbehavior_scatterplots()
 
     # Adjust colgaps and neaten grid
     neaten_grid!(axs)
-    colgap!(fig.layout, 2, Relative(0.01))
+    colgap!(fig.layout, 2, Relative(0.05))
     rowgap!(fig.layout, 1, Relative(0.01))
     rowgap!(fig.layout, 2, Relative(0.01))
 
