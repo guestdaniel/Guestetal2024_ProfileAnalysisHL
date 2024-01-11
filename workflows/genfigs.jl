@@ -145,7 +145,7 @@ fig = genfig_sim_bowls_frequency_summary()
 save(projectdir("plots", "sim_bowls", "02_density_and_frequency_summary.svg"), fig)
 
 # Create summary showing correlations between model and simulated responses
-fig = genfig_sim_bowls_modelbehavior_correlations()
+fig = genfig_sim_bowls_modelbehavior_scatterplots()
 save(projectdir("plots", "sim_bowls", "03_density_and_modelbehavior_correlations.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -177,8 +177,8 @@ save(projectdir("plots", "sim_bowls", "s02_pure_tone_control_rl_functions.svg"),
 # Figure ? // sim_hi
 # Hearing-impaired simulations figure
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-fig = genfig_audiograms_and_cohc()
-save(projectdir("plots", "sim_hi", "s01_audiograms_and_cohc_cihc.svg"), fig)
+# fig = genfig_audiograms_and_cohc()
+# save(projectdir("plots", "sim_hi", "s01_audiograms_and_cohc_cihc.svg"), fig)
 
 fig = genfig_sim_hi_behavior_correlations()
 save(projectdir("plots", "sim_hi", "01_hi_sim_correlations.svg"), fig)

@@ -198,7 +198,7 @@ function genfig_sim_bowls_frequency_summary()
 
     # Fetch relevant behavioral data and average across listeners/repeats
     beh = @chain fetch_behavioral_data() begin
-        @subset(:rove .== "fixed level", :hl_group .== "< 5 db hl", :include .== true)
+        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL", :include .== true)
         avg_behavioral_data()
     end
 
