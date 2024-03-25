@@ -330,7 +330,8 @@ function genfig_sim_hi_cohc_correlations()
                     sim_ss.cohc_gainloss[sim_ss.include .== true], 
                     sim_ss.θ[sim_ss.include .== true]; 
                     color=colors[idx], 
-                    marker=pick_marker.(sim_ss.center_freq[sim_ss.include .== true])
+                    marker=pick_marker2(n_comp),
+                    label=string(n_comp),
                 )
                 scatter!(
                     ax, 
@@ -345,6 +346,9 @@ function genfig_sim_hi_cohc_correlations()
                     color=colors[idx]
                 )
             end
+        end
+        if (model == "InferiorColliculusSFIEBS") & (mode == "templatebased")
+            axislegend(ax; orientation=:horizontal, position=:lb, colgap=3.0, padding=(1.0f0, 1.0f0, 1.0f0, 1.0f0), nbanks=2, rowgap=0.0, patchlabelgap=1.0, markersize=20.0)
         end
     end
 

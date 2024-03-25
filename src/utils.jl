@@ -1,7 +1,7 @@
 export logistic, logistic_fit, logistic_predict, hearing_group, hl_offsets,
     hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function, modelstr,
     variance_explained, get_hl_colors, color_group, marker_group, fetch_behavioral_data,
-    avg_behavioral_data, fetch_audiograms, quickfitlm, pick_marker
+    avg_behavioral_data, fetch_audiograms, quickfitlm, pick_marker, pick_marker2
 
 """
     logistic(x, λ; L, offset)
@@ -231,5 +231,16 @@ function pick_marker(freq)
         1000.0 => :rect
         2000.0 => :diamond
         4000.0 => :pentagon
+    end
+end
+
+# Function to select markers based on n_comp
+function pick_marker2(n_comp)
+    @match n_comp begin
+        5 => :utriangle
+        13 => :star4
+        21 => :hexagon
+        29 => :circle
+        37 => :ltriangle
     end
 end

@@ -17,7 +17,7 @@ save(projectdir("plots", "intro", "intro.svg"), fig)
 # Generate psychometric functions
 fig = genfig_beh_1kHz_psychometric_functions_v2()
 save(projectdir("plots", "beh_1kHz", "01_psychometric_functions.svg"), fig)
-
+ 
 # Generate bowls
 fig = genfig_beh_1kHz_bowls()
 save(projectdir("plots", "beh_1kHz", "02_bowls.svg"), fig)
@@ -147,6 +147,16 @@ save(projectdir("plots", "sim_bowls", "02_density_and_frequency_summary.svg"), f
 # Create summary showing correlations between model and simulated responses
 fig = genfig_sim_bowls_modelbehavior_scatterplots()
 save(projectdir("plots", "sim_bowls", "03_density_and_modelbehavior_correlations.svg"), fig)
+
+# Create legend for scatterplot above
+fig = Figure()
+ax = Axis(fig[1, 1])
+s = map([500, 1000, 2000, 4000]) do freq
+    scatter!(ax, [1.0], [1.0]; marker=pick_marker(freq), color=:black, markersize=20.0)
+end
+Legend(fig[1, 2], s, ["0.5", "1", "2", "4"], markersize=20.0)
+fig
+save(projectdir("plots", "sim_bowls", "scatter_legend.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Figure 7 // sim_bowls

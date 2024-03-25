@@ -389,6 +389,9 @@ function genfig_beh_1kHz_rove_effects()
     df_ind = df_ind[completecases(df_ind), :]
 
     df_summary = @chain df_ind begin
+        # Eliminate elements that aren't in "include"
+        @subset(:include .== true)
+
         # Group by rove, component count, and group
         groupby([:n_comp, :hl_group, :include])
 
@@ -412,7 +415,7 @@ function genfig_beh_1kHz_rove_effects()
             yticks=0:5:15, 
         )
     end
-    ylims!.(axs, -2.5, 15.0)
+    ylims!.(axs, -2.5, 17.0)
     xlims!.(axs, 2, 40)
     neaten_grid!(axs, "horizontal")
 

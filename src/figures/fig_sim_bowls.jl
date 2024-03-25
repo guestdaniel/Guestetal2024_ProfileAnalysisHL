@@ -296,8 +296,21 @@ function genfig_sim_bowls_modelbehavior_scatterplots()
             @orderby(:n_comp, :center_freq)
         end
 
-        # Scatter each dataset
-        scatter!(ax, beh.threshold, df_subset.θ; color=:black, marker=pick_marker.(beh.freq), markersize=10.0)
+        # Loop through frequencies and plot each as separate scatter
+        for freq in [500, 1000, 2000, 4000]
+            beh_temp = beh[beh.freq .== freq, :]
+            mod_temp = df_subset[df_subset.center_freq .== freq, :]
+
+            scatter!(
+                ax, 
+                beh_temp.threshold, 
+                mod_temp.θ; 
+                color=:black, 
+                marker=pick_marker(freq), 
+                label=string(freq/1000),
+                markersize=10.0
+            )
+        end
 
         # Fit lm 
         temp = DataFrame(behavior=beh.threshold, model=df_subset.θ)
@@ -314,6 +327,11 @@ function genfig_sim_bowls_modelbehavior_scatterplots()
         ax.yticks = -30.0:10.0:10.0
         xlims!(ax, -35.0, 10.0)
         ax.xticks = -30.0:10.0:10.0
+
+        # Add axis legend
+        # if (model == "InferiorColliculusSFIEBS") & (mode == "singlechannel")
+        #     axislegend(ax; orientation=:horizontal, position=:lb)
+        # end
     end
     
     # Add labels
