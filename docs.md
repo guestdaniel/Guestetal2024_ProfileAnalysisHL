@@ -1,10 +1,8 @@
-# Profile analysis at high frequencies and in listeners with sensorineural hearing loss (Guest et al., 2023)
+# Profile analysis at high frequencies and in listeners with sensorineural hearing loss (Guest et al., 2024, JASA)
 
 # Introduction
-
-# Behavioral procedure
-Behavior was conducted in the human testing space of the Carney lab (University of Rochester Medical Center, Rochester NY).
-The primary experimenters were Evie Feld and David Cameron.
+This repository contains the code necessary to reproduce the figures and analyses described in:
+[full citation goes here]
 
 # Files and paths
 ## Behavioral data
@@ -21,19 +19,18 @@ These files have the following columns:
 ```
 .  
 ├── data                     # Behavioral data (internal and external) lives here
-├── plots                    # Intermediate figure files, primary figure .svg files, etc.
+├── plots                    # Intermediate figure files and .svg figure files
 ├── src                      # Primary source directory
-│   ├── experiments          # Private code for implementing and running various simulated experiments
-│   ├── figures              # Private code for compiling simulated results into figures
+│   ├── experiments          # Code for simulated experiments
+│   ├── figures              # Code for compiling simulated results into figures
 │   └── ProfileAnalysis.jl   # Primary source file
-├── workflows                # Folder containing various "workflows" (sequences of scripts)
-│   ├── behavioral_data      # Public scripts for wrangling, plotting, and analyzing behavioral data
-│   ├── simulations          # Public scripts for running simulated experiments
+├── workflows                # Folder containing sequences of scripts
+│   ├── behavioral_data      # Scripts for wrangling/plotting/analyzing behavioral data
+│   ├── simulations          # Scripts for running simulated experiments
 │   └── genfigs.jl           # Script for generating paper figures
 ├── docs.md                  # Documentation file for the entire repository
-├── cfg.R                    # Short script to provide constants/configs shared across all R files
+├── cfg.R                    # Script to provide config shared across all R files
 ├── LICENSE                  # License file for the code contained in this repository
-├── LICENSE_data             # [[TODO]] License file for the behavioral data contained in this repository
 └── Project.toml             # Julia environment management file
 ```
 
@@ -55,7 +52,7 @@ Next we have automated steps that preprocess, clean, and compile the data.
 ## Behavioral data workflow (external)
 This section describes behavioral data workflow steps that are relevant to anyone with the partially preprocessed behavioral data files available in `data\int_pro`. 
 We extract thresholds from the raw data in Julia and then analyze those thresholds in R.
-1. Run `workflows\behavioral_data\04_postprocess_compiled_data.jl` to add additional useful columns to the behavioral data (e.g., levels in terms of sensational level)
+1. Run `workflows\behavioral_data\04_postprocess_compiled_data.jl` to add additional useful columns to the behavioral data (e.g., levels in terms of sensation level)
 2. Run `workflows\behavioral_data\05_extract_thresholds.jl` to fit logistic curves to behavioral data on the individual-listener level in each condition and save to resulting thresholds and slopes to disk.
 3. Run `workflows\behavioral_data\06_evaluate_threshold_fits.jl` to generate plots showing the correspondence between the raw proportion correct data and the fitted curves.
 
@@ -74,8 +71,8 @@ Simulations are organized around concrete subtypes of `ProfileAnalysisExperiment
 There are several available, each of which handle a subset of the total necessary simulations for the paper:
 - `ProfileAnalysis_PFTemplateObserver`: Majority of NH simulations in paper
 - `ProfileAnalysis_PFTemplateObserver_HearingImpaired`: Majority of HI simulations in paper
-- `ProfileAnalysis_PFTemplateObserver_WidebandControl`: Small control simulations for testing off-CF effects
-- `ProfileAnalysis_PFTemplateObserver_PureToneControl`: Small control simulations for testing contributions of suppression
+- `ProfileAnalysis_PFTemplateObserver_WidebandControl`: Control for testing off-CF effects
+- `ProfileAnalysis_PFTemplateObserver_PureToneControl`: Control for testing suppression
 
 The following commands can be used to work with these types, assuming that the associated `Utilities` package is also loaded.
 ```
@@ -102,3 +99,6 @@ Instead, we first set up an environment on CIRC's BlueHive and then run the simu
 This is achieved by submitting `PFs_run.sh` using `sbatch`. 
 This script uses ~30 worker processes for long stretches of time to run `PFs_run.jl`, a script that sets up each worker process' environemnt and simulates each of the above experiments.
 The results of this process can be downloaded to local machies using the Julia function `synchronize_cache`.
+
+## Figure workflow
+Figure generation [finish]
