@@ -284,6 +284,8 @@ function genfig_sim_methods_example_responses()
     example_plot_pair!(axs[4], example_prep_sims(-10.0, InferiorColliculusSFIEBS, StandardBS)...; color=:black)
 
     # Adjust
+    xlims!.(axs, -0.55, 0.55)
+    [ax.xticks = [-0.5, 0.0, 0.5] for ax in axs]
     axs[1].ylabel = "Firing rate (sp/s)"
     Label(fig[2, 2:3], "CF (oct re: target frequency)"; tellwidth=false)
     rowgap!(fig.layout, 1, Relative(0.03))

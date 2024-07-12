@@ -4,6 +4,15 @@
 This repository contains the code necessary to reproduce the figures and analyses described in:
 [full citation goes here]
 
+# Prep work
+This is a temporary location for me to keep track of some things I need to prep for the eventual code/data release.
+- [ ] Check on each figure and update as needed
+- [ ] Check on simulation caches, checks, etc.
+- [ ] Check on each sim figure and update as needed
+- [ ] Turn AuditoryNerveFiber into a package
+- [ ] Bundle old frozen copy of utilities here
+- [ ] Turn ProfileAnalysis into a package
+
 # Files and paths
 ## Behavioral data
 Behavioral data are stored in the `data` folder.

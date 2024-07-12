@@ -383,8 +383,8 @@ function genfig_beh_1kHz_rove_effects()
         @select(:rove, :n_comp, :hl_group, :subj, :threshold, :include)
 
         unstack(:rove, :threshold)
-
     end
+
     df_ind[!, :diff] .= df_ind[:, 6] .- df_ind[:, 5]
     df_ind = df_ind[completecases(df_ind), :]
 
@@ -432,8 +432,8 @@ function genfig_beh_1kHz_rove_effects()
         # Plot bowl
         errorbars!(axs[idx_group], sub.n_comp, sub.diff, 1.96 .* sub.stderr; color=color_group(group))
         scatter!(axs[idx_group], sub.n_comp, sub.diff; color=color_group(group), marker=:utriangle)
-        scatter!(axs[idx_group], ind.n_comp .+ 2, ind.diff; color=color_group(group), markersize=fig_defaults["markersize"]/1.4, marker=:utriangle)
-        scatter!(axs[idx_group], ind_excl.n_comp .+ 2, ind_excl.diff; color=:gray, markersize=fig_defaults["markersize"]/1.4, marker=:xcross)
+        scatter!(axs[idx_group], ind.n_comp .+ 2, Float64.(ind.diff); color=color_group(group), markersize=fig_defaults["markersize"]/1.4, marker=:utriangle)
+        scatter!(axs[idx_group], ind_excl.n_comp .+ 2, Float64.(ind_excl.diff); color=:gray, markersize=fig_defaults["markersize"]/1.4, marker=:xcross)
     end
 
     # Adjust spacing
