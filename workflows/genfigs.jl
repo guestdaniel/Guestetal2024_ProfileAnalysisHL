@@ -1,7 +1,52 @@
 using ProfileAnalysis
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Figure checklist
+# 
+# FIGURE 1 (LISTENER AUDIOGRAMS)
+# [X] intro.svg
+# 
+# FIGURE 2 (BEHAVIOR 1 KHZ)
+# [X] 01_psychometric_functions.svg
+# [X] 02_bowls.svg
+# [X] 03_rove_effects.svg
+#
+# FIGURE 3 (BEHAVIOR UNROVED) 
+# [X] 01_psychometric_functions.svg
+# [X] 02_bowls.svg
+#
+# FIGURE 4 (BEHAVIOR HEARING LOSS) 
+# [X] 01_hearing_loss.svg
+# 
+# FIGURE 5 (MODEL INTRO)
+# [X] 02_rlfs.svg
+# [X] 03_tcs.svg
+# [X] 04_mtfs.svg
+# [X] 05_example_responses.svg
+#
+# FIGURE 6 (MODEL PROFILES)
+# [ ] 01_unroved_patterns_$.svg
+# TODO: Check on this figure and make sure that it is correct (need to regen)
+#
+# FIGURE 7 (MODEL BOWLS)
+# [X] 01_density_and_frequency_bowls_simple.svg
+# [X] 02_density_and_frequency_summary.svg
+# [X] 03_density_and_modelbehavior_correlations.svg
+#
+# FIGURE 8 (MODEL SUPPRESSION)
+# [ ] s02_pure_tone_control.svg
+# [ ] s02_pure_tone_control_stackplots.svg
+# [ ] s02_pure_tone_control_flankers.svg
+# [ ] s02_pure_tone_control_rl_functions.svg
+#
+# FIGURE 9 (MODEL HEARING LOSS)
+# [X] 01_hi_sim_correlations.svg
+# [X] 02_hi_sim_cohc_correlations.svg
+# [X] 03_hi_sim_bowls_1k.svg
+# [X] 03_hi_sim_bowls_2k.svg
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 0 // intro
+# Figure 1 // intro
 #
 # Shows audiometric data for participants
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -9,7 +54,7 @@ fig = genfig_subj_audiograms()
 save(projectdir("plots", "intro", "intro.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 1 // beh_1kHz
+# Figure 2 // beh_1kHz
 # Behavior at 1 kHz
 #
 # Shows group-average psychometric functions for each HL group w/ and w/o a level rove in 
@@ -29,7 +74,7 @@ fig = genfig_beh_1kHz_rove_effects()
 save(projectdir("plots", "beh_1kHz", "03_rove_effects.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 2 // beh_frequency
+# Figure 3 // beh_frequency
 # Behavior at all frequencies, unroved only
 #
 # Shows group-average psychometric functions at all target frequencies for fixed-level 
@@ -45,7 +90,7 @@ fig = genfig_beh_frequency_bowls()
 save(projectdir("plots", "beh_frequency", "02_bowls.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 3 // beh_hearing_loss
+# Figure 4 // beh_hearing_loss
 # Behavioral data analyzed as a function of degree of hearing loss
 #
 # Shows behavioral thresholds as a function of audiometric threshold at the target frequency 
@@ -56,7 +101,7 @@ fig = genfig_beh_hearing_loss()
 save(projectdir("plots", "beh_hearing_loss", "01_hearing_loss.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 4 // sim_methods
+# Figure 5 // sim_methods
 # Modeling methods figures
 #
 # Summary of modeling methods, depicting on top a flow diagram of the various stages of the 
@@ -80,7 +125,7 @@ fig = genfig_sim_methods_example_responses()
 save(projectdir("plots", "sim_methods", "05_example_responses.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 5 // sim_psychometric_functions
+# Figure 6 // sim_psychometric_functions
 # Modeling detailed example results figure
 #
 # Shows "delta" / increment responses for each model on top, and deltas / distances for 
@@ -105,7 +150,7 @@ save(projectdir("plots", "sim_methods", "05_example_responses.svg"), fig)
 # save(projectdir("plots", "sim_psychometric_functions", "04_rate_curves_templatebased.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 5 2.0 // sim_reponses
+# Figure 6 // sim_reponses
 # Modeling response figures
 #
 # Shows response patterns for each model stage and condition
@@ -130,7 +175,7 @@ fig = plot_colorbar((-3.0, 3.0), reverse(colorschemes[:roma]), LinRange(-3.0, 3.
 save(projectdir("plots", "sim_responses", "significance_colorbar.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 6 // sim_bowls
+# Figure 7 // sim_bowls
 # Modeling results overview figure
 # 
 # Shows model thresholds vs behavioral thresholds for each condition for single-channel
@@ -161,7 +206,7 @@ fig
 save(projectdir("plots", "sim_bowls", "scatter_legend.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure 7 // sim_bowls
+# Figure 8 // sim_bowls
 # LSR results follow-up simulations
 # 
 # Shows the "pure-tone control" LSR simulations, comparisons of sound level vs LSR rate
@@ -186,7 +231,7 @@ fig = genfig_puretonecontrol_rl_functions()
 save(projectdir("plots", "sim_bowls", "s02_pure_tone_control_rl_functions.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Figure ? // sim_hi
+# Figure 9 // sim_hi
 # Hearing-impaired simulations figure
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # fig = genfig_audiograms_and_cohc()

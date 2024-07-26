@@ -53,7 +53,7 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple()
             lines!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
             scatter!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
             if nrow(beh_roved) > 0
-                lines!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, marker=:rect, linestyle=:dash)
+                lines!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, linestyle=:dash)
                 scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, marker=:rect)
                 scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:white, marker=:rect, markersize=4.0)
             end
