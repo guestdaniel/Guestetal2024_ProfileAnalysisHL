@@ -86,7 +86,9 @@ data_clean$file_index = as.factor(data_clean$file_index)
 # Add HL at each frequency
 for (i in seq_len(nrow(data_clean))) {
   data_clean[i, "hl"] = data_clean[i, paste0("F", as.character(data_clean[i, "freq"]))]
-  data_clean[i, "pta"] = mean(as.numeric(data_clean[i, 11:19]))
+  data_clean[i, "pta_all"] = mean(as.numeric(data_clean[i, 11:19]))
+  data_clean[i, "pta_3"] = mean(as.numeric(data_clean[i, 12:14]))
+  data_clean[i, "pta_4"] = mean(as.numeric(data_clean[i, 12:15]))
 }
 
 # Save output

@@ -64,14 +64,21 @@ save(projectdir("plots", "intro", "intro.svg"), fig)
 # Generate psychometric functions
 fig = genfig_beh_1kHz_psychometric_functions_v2()
 save(projectdir("plots", "beh_1kHz", "01_psychometric_functions.svg"), fig)
+fig = genfig_beh_1kHz_psychometric_functions_v3()
+save(projectdir("plots", "beh_1kHz", "01_psychometric_functions_r1.svg"), fig)
  
 # Generate bowls
-fig = genfig_beh_1kHz_bowls()
-save(projectdir("plots", "beh_1kHz", "02_bowls.svg"), fig)
+#fig = genfig_beh_1kHz_bowls()
+#save(projectdir("plots", "beh_1kHz", "02_bowls.svg"), fig)
+fig = genfig_beh_1kHz_bowls_v2(grouper_pta4)
+save(projectdir("plots", "beh_1kHz", "02_bowls_r1.svg"), fig)
 
 # Generate "rove effect" plot
-fig = genfig_beh_1kHz_rove_effects()
-save(projectdir("plots", "beh_1kHz", "03_rove_effects.svg"), fig)
+# fig = genfig_beh_1kHz_rove_effects()
+# save(projectdir("plots", "beh_1kHz", "03_rove_effects.svg"), fig)
+fig = genfig_beh_1kHz_rove_effects_v2()
+save(projectdir("plots", "beh_1kHz", "03_rove_effects_r1.svg"), fig)
+
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Figure 3 // beh_frequency

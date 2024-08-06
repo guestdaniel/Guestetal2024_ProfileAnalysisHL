@@ -133,7 +133,11 @@ end
 # Function to map from group name to corresponding group color
 function color_group(group::AbstractString) 
     hl_colors = get_hl_colors()
-    if group == "< 5 dB HL"
+    if group == "Normal hearing"
+        :black
+    elseif group == "Hearing impaired"
+        :red
+    elseif group == "< 5 dB HL"
         hl_colors[1]
     elseif group == "5-15 dB HL"
         hl_colors[2]

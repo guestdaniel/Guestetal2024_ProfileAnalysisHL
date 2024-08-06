@@ -20,8 +20,27 @@ thresholds = thresholds[(thresholds$condition != "1000 Hz roved level") & (thres
 # Fit lme model
 mod = lmer(threshold ~ n_comp*freq*hl + (1|subj), data=thresholds)
 
+# Fit alternative models for fun
+# MODEL 2: Model with threshold @ target frequency and age
+thresholds[thresholds$subj == "S198", "age"] = 64.0
+#thresholds[, "age_norm"] = (thresholds$age - mean(thresholds$age)) / sd(thresholds$age)
+mod = lmer(threshold ~ n_comp*freq*hl + age + (1|subj), data=thresholds)
+
+# MODEL 3: Model with PTA4 and age
+mod = lmer(threshold ~ n_comp*freq*pta_4 + age + (1|subj), data=thresholds)
+
 # Evaluate with ANOVA
 Anova(mod, test="F", type=3)
+
+# Evaluate visually
+plot(allEffects(mod))
+
+df = as.data.frame(allEffects(mod))[[2]]
+ggplot(df, aes(x=n_comp, y=fit, ymin=fit-se, ymax=fit+se, color=as.factor(pta_4), group=as.factor(pta_4))) + 
+    geom_point() +
+    geom_line() +
+    geom_errorbar(width=0.1) + 
+    facet_grid(. ~ freq)
 
 # Evaluate frequency simple main effect
 t1 = testInteractions(
