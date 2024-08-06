@@ -6,31 +6,31 @@ using ProfileAnalysis
 # [X] intro.svg
 # 
 # FIGURE 2 (BEHAVIOR 1 KHZ)
-# [X] 01_psychometric_functions.svg
-# [X] 02_bowls.svg
-# [X] 03_rove_effects.svg
+# [ ] 01_psychometric_functions.svg
+# [ ] 02_bowls.svg
+# [ ] 03_rove_effects.svg
 #
 # FIGURE 3 (BEHAVIOR UNROVED) 
-# [X] 01_psychometric_functions.svg
-# [X] 02_bowls.svg
+# [ ] 01_psychometric_functions.svg
+# [ ] 02_bowls.svg
 #
 # FIGURE 4 (BEHAVIOR HEARING LOSS) 
-# [X] 01_hearing_loss.svg
+# [ ] 01_hearing_loss.svg
 # 
 # FIGURE 5 (MODEL INTRO)
-# [X] 02_rlfs.svg
-# [X] 03_tcs.svg
-# [X] 04_mtfs.svg
-# [X] 05_example_responses.svg
+# [ ] 02_rlfs.svg
+# [ ] 03_tcs.svg
+# [ ] 04_mtfs.svg
+# [ ] 05_example_responses.svg
 #
 # FIGURE 6 (MODEL PROFILES)
 # [ ] 01_unroved_patterns_$.svg
 # TODO: Check on this figure and make sure that it is correct (need to regen)
 #
 # FIGURE 7 (MODEL BOWLS)
-# [X] 01_density_and_frequency_bowls_simple.svg
-# [X] 02_density_and_frequency_summary.svg
-# [X] 03_density_and_modelbehavior_correlations.svg
+# [ ] 01_density_and_frequency_bowls_simple.svg
+# [ ] 02_density_and_frequency_summary.svg
+# [ ] 03_density_and_modelbehavior_correlations.svg
 #
 # FIGURE 8 (MODEL SUPPRESSION)
 # [ ] s02_pure_tone_control.svg

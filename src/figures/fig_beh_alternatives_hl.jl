@@ -38,7 +38,7 @@ function genfig_beh_1kHz_bowls_v2(grouper=grouper_identity)
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
 
     # Filter data only to include relevant subsections (1 kHz data)
-    df = @subset(df, :freq .== 1000, :include .== true)
+    df = @subset(df, :freq .== 1000)#, :include .== true)
 
     # Group data based on grouper function
     df = grouper(df)
