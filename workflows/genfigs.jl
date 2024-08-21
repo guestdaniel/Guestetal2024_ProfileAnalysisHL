@@ -62,8 +62,8 @@ save(projectdir("plots", "intro", "intro.svg"), fig)
 # a level rove and the "rove effect" in dB for the 1-kHz condition for each group.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Generate psychometric functions
-fig = genfig_beh_1kHz_psychometric_functions_v2()
-save(projectdir("plots", "beh_1kHz", "01_psychometric_functions.svg"), fig)
+#fig = genfig_beh_1kHz_psychometric_functions_v2()
+#save(projectdir("plots", "beh_1kHz", "01_psychometric_functions.svg"), fig)
 fig = genfig_beh_1kHz_psychometric_functions_v3()
 save(projectdir("plots", "beh_1kHz", "01_psychometric_functions_r1.svg"), fig)
  
