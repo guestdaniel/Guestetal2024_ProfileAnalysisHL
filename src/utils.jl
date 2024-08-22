@@ -137,6 +137,10 @@ function color_group(group::AbstractString)
         :black
     elseif group == "Hearing impaired"
         :red
+    elseif group == "Hearing loss\n(LF and HF)"
+        :red
+    elseif group == "Hearing loss\n(HF only)"
+        :pink
     elseif group == "< 5 dB HL"
         hl_colors[1]
     elseif group == "5-15 dB HL"

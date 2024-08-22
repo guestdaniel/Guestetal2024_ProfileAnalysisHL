@@ -26,6 +26,7 @@ using Optim
 using GLM
 
 # General code
+include("groupers.jl")           # functions for grouping rows of dfs based on audiometry
 include("stimuli.jl")            # stimulus code
 include("utils.jl")              # random useful functions
 include("parallel.jl")           # stimulus code

@@ -85,10 +85,19 @@ data_clean$file_index = as.factor(data_clean$file_index)
 
 # Add HL at each frequency
 for (i in seq_len(nrow(data_clean))) {
+  # Add "hl" as audiometric threshold at target frequency
   data_clean[i, "hl"] = data_clean[i, paste0("F", as.character(data_clean[i, "freq"]))]
-  data_clean[i, "pta_all"] = mean(as.numeric(data_clean[i, 11:19]))
-  data_clean[i, "pta_3"] = mean(as.numeric(data_clean[i, 12:14]))
-  data_clean[i, "pta_4"] = mean(as.numeric(data_clean[i, 12:15]))
+  # Add "pta_all" as average of all audiometric frequenies from 2.5 to 8 kHz in octave 
+  # increments
+  data_clean[i, "pta_all"] = mean(as.numeric(data_clean[i, c(11, 12, 13, 15, 17, 18, 19)]))
+  # Add "pta_3" as pure-tone average at 0.5, 1, 2 kHz (as suggested by R2)
+  data_clean[i, "pta_3"] = mean(as.numeric(data_clean[i, c(12, 13, 15)]))
+  # Add "pta_4" as pure-tone average at 0.5, 1, 2, 4 kHz
+  data_clean[i, "pta_4"] = mean(as.numeric(data_clean[i, c(12, 13, 15, 17)]))
+  # Add "pta_jama" as pure-tone average at 0.5, 1, 2, 4 kHz
+  data_clean[i, "pta_jama"] = mean(as.numeric(data_clean[i, c(12, 13, 15, 16)]))
+  # Add "pta_upper" as pure-tone average of 4 and 8 kHz
+  data_clean[i, "pta_upper"] = mean(as.numeric(data_clean[i, c(17, 18, 19)]))
 }
 
 # Save output

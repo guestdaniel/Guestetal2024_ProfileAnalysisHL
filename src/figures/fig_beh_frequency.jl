@@ -11,9 +11,12 @@ Plots group-average psychometric functions for each HL group in every fixed-leve
 with small markers below the curves. This figure is placed in the left-hand side of Figure 
 2.
 """
-function genfig_beh_frequency_psychometric_functions()
+function genfig_beh_frequency_psychometric_functions(grouper=grouper_threeway)
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "data_postproc.csv")))
+
+    # Group data
+    df = grouper(df)
 
     # Filter data only to include relevant subsections (1 kHz data)
     df = @subset(df, :rove .== "fixed level", :include .== true)
@@ -31,7 +34,7 @@ function genfig_beh_frequency_psychometric_functions()
 
         # Filter out places where we have too little data (we want at least 2 subjects at each point)
         transform(:μ => (x -> length(x)) => :count)
-        @subset(:count .> 2)
+        @subset(:count .>= 2)
 
         # Group again
         groupby([:freq, :increment, :n_comp, :hl_group])
@@ -40,11 +43,13 @@ function genfig_beh_frequency_psychometric_functions()
         @combine(
             :stderr = std(:μ)/sqrt(length(:μ)),
             :μ = mean(:μ),
+            :n = length(:μ),
         )
     end
 
     # Fetch psychometric functions from pre-computed dataframe
     thresholds = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
+    thresholds = grouper(thresholds)
     thresholds = @subset(thresholds, :rove .== "fixed level", :include .== true)
     df_fitted = @chain thresholds begin
         # Group by rove, component count, and group
@@ -99,23 +104,29 @@ function genfig_beh_frequency_psychometric_functions()
 
     # Loop through combinations of component spacing (rows) and rove (columns), plot data
     for (idx_n_comp, n_comp) in enumerate(sort(unique(df.n_comp)))
-        for (idx_group, group) in enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])
+        for (idx_group, group) in enumerate(unique(df.hl_group)[[2, 1, 3]])
             for (idx_freq, freq) in enumerate([500, 1000, 2000, 4000])
                 # Subset means and filled data
                 mean_sub = @subset(df_mean, :n_comp .== n_comp, :freq .== freq, :hl_group .== group)
-                filled_sub = @subset(df_filled, :n_comp .== n_comp, :freq .== freq, :hl_group .== group)
 
-                # Plot curve fit
-                lines!(axs[idx_n_comp, idx_freq], filled_sub.increment, filled_sub.pcorr; color=color_group(group))
+                # Only if we have any data do we do the next steps
+                if nrow(mean_sub) > 0
+                    filled_sub = @subset(df_filled, :n_comp .== n_comp, :freq .== freq, :hl_group .== group)
 
-                # Plot data and errorbars
-                errorbars!(axs[idx_n_comp, idx_freq], mean_sub.increment, mean_sub.μ, 1.96 .* mean_sub.stderr; color=color_group(group))
-                scatter!(axs[idx_n_comp, idx_freq], mean_sub.increment, mean_sub.μ; color=color_group(group))
+                    # Plot curve fit
+                    lines!(axs[idx_n_comp, idx_freq], filled_sub.increment, filled_sub.pcorr; color=color_group(group))
 
-                # Plot thresholds as small markers below curves
-                offset = 0.30 + (idx_group-1)*0.05
-                fitted_sub = @subset(df_fitted, :n_comp .== n_comp, :freq .== freq, :hl_group .== group)
-                scatter!(axs[idx_n_comp, idx_freq], fitted_sub.threshold, [offset]; marker=:circle, color=color_group(group))
+                    # Plot data and errorbars
+                    if any(mean_sub.n .> 2)
+                        errorbars!(axs[idx_n_comp, idx_freq], mean_sub.increment[mean_sub.n .> 2], mean_sub.μ[mean_sub.n .> 2], 1.96 .* mean_sub.stderr[mean_sub.n .> 2]; color=color_group(group))
+                    end
+                    scatter!(axs[idx_n_comp, idx_freq], mean_sub.increment, mean_sub.μ; color=color_group(group))
+
+                    # Plot thresholds as small markers below curves
+                    offset = 0.30 + (idx_group-1)*0.05
+                    fitted_sub = @subset(df_fitted, :n_comp .== n_comp, :freq .== freq, :hl_group .== group)
+                    scatter!(axs[idx_n_comp, idx_freq], fitted_sub.threshold, [offset]; marker=:circle, color=color_group(group))
+                end
             end
         end
     end
@@ -144,11 +155,14 @@ Plots group-average thresholds each HL group as a function of target frequency, 
 into different rows for each component-count condition. This figure is placed in the 
 right-hand side of Figure 2.
 """
-function genfig_beh_frequency_bowls()
+function genfig_beh_frequency_bowls(grouper=grouper_threeway)
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
 
-    # Filter data only to include relevant subsections (1 kHz data)
+    # Group data
+    df = grouper(df)
+
+    # Filter data only to include relevant subsections
     df = @subset(df, :rove .== "fixed level", :include .== true)
 
     # Summarize as function of number of components and group
@@ -160,8 +174,10 @@ function genfig_beh_frequency_bowls()
         @combine(
             :stderr = std(:threshold)/sqrt(length(:threshold)),
             :threshold = mean(:threshold),
+            :n = length(:threshold),
         )
     end
+    df_summary = @subset(df_summary, :n .>= 2)
 
     # Configure plotting parameters
     set_theme!(theme_carney; Scatter=(markersize=10.0, ))
@@ -183,16 +199,19 @@ function genfig_beh_frequency_bowls()
     neaten_grid!(axs, "vertical")
 
     # Loop through combinations of component spacing (rows) and rove (columns), plot data
-    for (idx_group, group) in enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])
+    for (idx_group, group) in enumerate(unique(df.hl_group)[[2, 3, 1]])
         for (idx_n_comp, n_comp) in enumerate(sort(unique(df.n_comp)))
+            # Print
             # Subset means and filled data
             sub = @subset(df_summary, :n_comp .== n_comp, :hl_group .== group)
             sub = @orderby(sub, :freq)
 
+            println("$n_comp $group $sub")
+
             # Plot bowl
-            errorbars!(axs[idx_n_comp], 1:4, sub.threshold, 1.96 .* sub.stderr; color=color_group(group))
-            scatter!(axs[idx_n_comp], 1:4, sub.threshold; color=color_group(group))
-            lines!(axs[idx_n_comp], 1:4, sub.threshold; color=color_group(group))
+            errorbars!(axs[idx_n_comp], 1:nrow(sub), sub.threshold, 1.96 .* sub.stderr; color=color_group(group))
+            scatter!(axs[idx_n_comp], 1:nrow(sub), sub.threshold; color=color_group(group))
+            lines!(axs[idx_n_comp], 1:nrow(sub), sub.threshold; color=color_group(group))
         end
     end
 

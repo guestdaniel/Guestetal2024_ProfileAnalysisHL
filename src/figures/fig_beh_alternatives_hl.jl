@@ -2,38 +2,11 @@
 #
 # Code for alternative versions of figures showing hearing loss behavioral PA results
 
-export genfig_beh_1kHz_bowls_v2, grouper_identity, grouper_pta3, grouper_pta4, grouper_hl,
+export genfig_beh_1kHz_bowls_v2, 
        genfig_beh_hearing_loss_v2, genfig_beh_frequency_bowls_v2, genfig_beh_1kHz_rove_effects_v2,
        genfig_beh_1kHz_psychometric_functions_v3
 
-grouper_identity(df) = df
-
-function grouper_pta3(df)
-    # Group based on whether PTA exceeds 25 dB HL
-    df[!, :hl_group] = convert.(String, df[!, :hl_group])
-    df[df.pta_3 .> 25.0, :hl_group] .= "Hearing impaired"
-    df[df.pta_3 .<= 25.0, :hl_group] .= "Normal hearing"
-    df
-end
-
-function grouper_pta4(df)
-    # Group based on whether PTA exceeds 25 dB HL
-    df[!, :hl_group] = convert.(String, df[!, :hl_group])
-    df[df.pta_4 .> 25.0, :hl_group] .= "Hearing impaired"
-    df[df.pta_4 .<= 25.0, :hl_group] .= "Normal hearing"
-    df
-end
-
-function grouper_hl(df)
-    # Group based on whether audiometric threshold at 1 kHz exceeds 25 dB HL
-    df[!, :hl_group] = convert.(String, df[!, :hl_group])
-    df[df.hl .> 20.0, :hl_group] .= "Hearing impaired"
-    df[df.hl .<= 20.0, :hl_group] .= "Normal hearing"
-    df
-end
-
-# TODO: Once stable, migrate this figure to replace `genfig_beh_1kHz_bowls_v2`
-function genfig_beh_1kHz_bowls_v2(grouper=grouper_identity)
+function genfig_beh_1kHz_bowls_v2(grouper=grouper_threeway)
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
 
@@ -60,7 +33,7 @@ function genfig_beh_1kHz_bowls_v2(grouper=grouper_identity)
 
     # Create figure and axes
     sf = 0.9
-    fig = Figure(; resolution=(150 * length(unique(df.hl_group)) * sf, 180 * sf))
+    fig = Figure(; resolution=(150 * length(unique(df.hl_group)) * sf, 190 * sf))
     axs = map(1:length(unique(df.hl_group))) do i
         Axis(
             fig[1, i], 
@@ -73,21 +46,20 @@ function genfig_beh_1kHz_bowls_v2(grouper=grouper_identity)
     neaten_grid!(axs, "horizontal")
 
     # Loop through combinations of component spacing (rows) and rove (columns), plot data
-    colors = color_group.(unique(df.hl_group))
-    for (idx_group, group) in enumerate(unique(df.hl_group))
+    for (idx_group, group) in enumerate(unique(df.hl_group)[[2, 1, 3]])
         sub_group = @subset(df_summary, :hl_group .== group)
         for (idx_rove, rove) in enumerate(["fixed level", "roved level"])
             # Subset means and filled data
             sub = @orderby(@subset(sub_group, :rove .== rove), :n_comp)
 
             # Plot bowl
-            lines!(axs[idx_group], sub.n_comp, sub.threshold; color=colors[idx_group])
+            lines!(axs[idx_group], sub.n_comp, sub.threshold; color=color_group(group))
             if rove .== "fixed level"
-                errorbars!(axs[idx_group], sub.n_comp, sub.threshold, 1.96 .* sub.stderr, zeros(5); color=colors[idx_group])
+                errorbars!(axs[idx_group], sub.n_comp, sub.threshold, 1.96 .* sub.stderr, zeros(5); color=color_group(group))
             else
-                errorbars!(axs[idx_group], sub.n_comp, sub.threshold, zeros(5), 1.96 .* sub.stderr; color=colors[idx_group])
+                errorbars!(axs[idx_group], sub.n_comp, sub.threshold, zeros(5), 1.96 .* sub.stderr; color=color_group(group))
             end
-            scatter!(axs[idx_group], sub.n_comp, sub.threshold; color=colors[idx_group], marker=rove == "fixed level" ? :circle : :rect)
+            scatter!(axs[idx_group], sub.n_comp, sub.threshold; color=color_group(group), marker=rove == "fixed level" ? :circle : :rect)
             if rove == "roved level"
                 scatter!(axs[idx_group], sub.n_comp, sub.threshold; color=:white, markersize=10.0/2, marker=rove == "fixed level" ? :circle : :rect)
             end
@@ -110,10 +82,8 @@ Plot differences between roved-level and fixed-level profile-analysis thresolds 
 Plot the "rove effect" magnitude, or the difference beween the roved-level threshold and
 the fixed-level threshold for every listener at 1 kHz. This figure is placed in the bottom
 left of Figure 1, and is Subfigure C.
-
-TODO: Once stable migrate to replace original `genfig_beh_1kHz_rove_effects`
 """
-function genfig_beh_1kHz_rove_effects_v2(grouper=grouper_pta4)
+function genfig_beh_1kHz_rove_effects_v2(grouper=grouper_threeway)
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
 
@@ -153,7 +123,7 @@ function genfig_beh_1kHz_rove_effects_v2(grouper=grouper_pta4)
 
     # Create figure and axes
     sf = 0.9
-    fig = Figure(; resolution=(150 * length(unique(df.hl_group)) * sf, 180 * sf))
+    fig = Figure(; resolution=(150 * length(unique(df.hl_group)) * sf, 190 * sf))
     axs = map(1:length(unique(df.hl_group))) do i
         Axis(
             fig[1, i], 
@@ -162,7 +132,7 @@ function genfig_beh_1kHz_rove_effects_v2(grouper=grouper_pta4)
             yticks=0:5:15,
         )
     end
-    ylims!.(axs, -2.5, 17.0)
+    ylims!.(axs, -5.0, 17.0)
     xlims!.(axs, 2, 40)
     neaten_grid!(axs, "horizontal")
 
@@ -170,22 +140,19 @@ function genfig_beh_1kHz_rove_effects_v2(grouper=grouper_pta4)
     hlines!.(axs, [0.0]; color=:black, linewidth=1.0)
 
     # Loop through combinations of component spacing (rows) and rove (columns), plot data
-    colors = color_group.(unique(df.hl_group))
-    for (idx_group, (group, c)) in enumerate(zip(unique(df.hl_group), colors))
+    for (idx_group, group) in enumerate(unique(df.hl_group)[[2, 1, 3]])
         # Subset means and filled data
         sub = @subset(df_summary, :hl_group .== group, :include .== true)
         ind = @subset(df_ind, :hl_group .== group, :include .== true)
         ind_excl = @subset(df_ind, :hl_group .== group, :include .== false)
 
         # Plot bowl
-        errorbars!(axs[idx_group], sub.n_comp, sub.diff, 1.96 .* sub.stderr; color=c)
-        scatter!(axs[idx_group], sub.n_comp, sub.diff; color=c, marker=:utriangle)
-        scatter!(axs[idx_group], ind.n_comp .+ 2, Float64.(ind.diff); color=c, markersize=fig_defaults["markersize"]/1.4, marker=:utriangle)
+        errorbars!(axs[idx_group], sub.n_comp, sub.diff, 1.96 .* sub.stderr; color=color_group(group))
+        scatter!(axs[idx_group], sub.n_comp, sub.diff; color=color_group(group), marker=:utriangle)
+        scatter!(axs[idx_group], ind.n_comp .+ 2, Float64.(ind.diff); color=color_group(group), markersize=fig_defaults["markersize"]/1.4, marker=:utriangle)
         scatter!(axs[idx_group], ind_excl.n_comp .+ 2, Float64.(ind_excl.diff); color=:gray, markersize=fig_defaults["markersize"]/1.4, marker=:xcross)
         axs[idx_group].title = group * "\n(n = $(length(unique(df[df.hl_group .== group, :].subj))))"
     end
-
-
 
     # Adjust spacing
     colgap!(fig.layout, Relative(0.02))
@@ -299,7 +266,7 @@ fitting a group-level psychometric function.
 
 TODO: Migrate to replace original
 """
-function genfig_beh_1kHz_psychometric_functions_v3(grouper=grouper_pta4)
+function genfig_beh_1kHz_psychometric_functions_v3(grouper=grouper_threeway)
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "data_postproc.csv")))
 
@@ -391,7 +358,7 @@ function genfig_beh_1kHz_psychometric_functions_v3(grouper=grouper_pta4)
 
     # Loop through combinations of component spacing (rows) and rove (columns), plot data
     for (idx_n_comp, n_comp) in enumerate(sort(unique(df.n_comp)))
-        for (idx_group, group) in enumerate(unique(df.hl_group))
+        for (idx_group, group) in enumerate(unique(df.hl_group)[[2, 1, 3]])
             for (idx_rove, (rove, marker)) in enumerate(zip(["fixed level", "roved level"], [:circle, :rect]))
                 # Subset means and filled data
                 mean_sub = @subset(df_mean, :n_comp .== n_comp, :rove .== rove, :hl_group .== group)

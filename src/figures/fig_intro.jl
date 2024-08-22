@@ -13,11 +13,20 @@ function genfig_subj_audiograms()
     # Filter audiograms to only contain subjects we tested in profile analysis
     audiograms = @subset(audiograms, in.(:Subject, Ref(subjs)))
 
-    # Add PTA column
+    # Add group info to df
+    df = grouper_threeway(df)
+
+    # Add PTA_3 column and PTA_ALL column
     pta = map(eachrow(audiograms)) do row
-        mean(row[[5, 6, 8, 10]])
+        mean(row[[5, 6, 8]])
     end
     audiograms[!, :pta] .= pta
+
+    pta_all = map(eachrow(audiograms)) do row
+        mean(row[[4, 5, 6, 8, 10, 12]])
+    end
+    audiograms[!, :pta_all] .= pta_all
+
 
     # Create audiogram Figure
     set_theme!()
@@ -27,17 +36,9 @@ function genfig_subj_audiograms()
         # Extract thresholds
         freqs = [250.0, 500.0, 1000.0, 1500.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0]
         θ = Vector(audiograms[idx, 4:12])
-        pta = Float64(audiograms[idx, :pta])
+        subj = audiograms[idx, :Subject]
+        group = df[df.subj .== subj, :][1, :hl_group]
 
-        # Determine color based on thresholds
-        if pta > 25.0
-            color = :red
-        elseif (mean(θ[freqs .<= 2000.0]) < 25.0) && (mean(θ[freqs .> 2000.0]) >= 25.0)
-            color = :black
-        else
-            color = :black 
-        end
-        
         # Plot black lines and colored points to indicate HL group on main plot
         jitter = randn(length(θ)) ./ 30
         freqs = freqs .* 2 .^ (jitter)
@@ -45,35 +46,27 @@ function genfig_subj_audiograms()
             ax, 
             freqs,
             θ,
-            color=color,
+            color=color_group(group),
         )
         scatter!(
             ax, 
             freqs,
             θ,
-            color=color,
+            color=color_group(group),
         )
     end
 
     axs_ind = [Axis(fig[i, j+8]; xscale=log10) for i = 1:8, j=1:3]
-    map(zip(eachrow(@orderby(audiograms, :pta)), axs_ind)) do (row, ax)
+    map(zip(eachrow(@orderby(audiograms, :pta_all)), axs_ind)) do (row, ax)
         # Extract thresholds
         freqs = [250.0, 500.0, 1000.0, 1500.0, 2000.0, 3000.0, 4000.0, 6000.0, 8000.0]
         θ = Vector(row[4:12])
-        pta = Float64(row[:pta])
-
-        # Determine color based on thresholds
-        if pta > 25.0
-            color = :red
-        elseif (mean(θ[freqs .<= 2000.0]) < 25.0) && (mean(θ[freqs .> 2000.0]) >= 25.0)
-            color = :black
-        else
-            color = :black 
-        end
+        subj = row[:Subject]
+        group = df[df.subj .== subj, :][1, :hl_group]
 
         # Plot ind subj audiogram
-        hlines!(ax, 0.0; color=:gray, linewidth=1.0)
-        lines!(ax, freqs, θ, color=color)
+        hlines!(ax, [0.0, 25.0]; color=:gray, linewidth=1.0)
+        lines!(ax, freqs, θ, color=color_group(group))
     end
 
     # Set limits, labels, ticks, etc.

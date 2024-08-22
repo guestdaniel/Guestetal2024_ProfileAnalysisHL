@@ -11,7 +11,7 @@ each tested condition. Includes a demarcation of degrees of hearing loss for whi
 expect some part of the stimulus to be inaudible (because per-component level falls below
 audiometric thresholds) and linear trend lines. Is Figure 3.
 """
-function genfig_beh_hearing_loss()
+function genfig_beh_hearing_loss(grouper=grouper_threeway)
     # Write mini function to fit lm to data and return interpolated fits
     function fit_lm(df)
         m = lm(@formula(threshold ~ hl), df)
@@ -24,17 +24,8 @@ function genfig_beh_hearing_loss()
     # Load in data
     df = DataFrame(CSV.File(datadir("int_pro", "thresholds.csv")))
 
-    # Manually note which conditions are significant (as of 3/17/23)
-    significant = [
-        (5, 500),
-        (13, 500),
-        (5, 1000),
-        (13, 2000),
-        (21, 2000),
-        (29, 2000),
-        (37, 2000),
-        (37, 4000),
-    ]
+    # Autogroup data
+    df = grouper(df)
 
     # Filter data only to include relevant subsections (unroved data) 
     df = @subset(df, :rove .== "fixed level")
@@ -64,7 +55,7 @@ function genfig_beh_hearing_loss()
             band!(axs[idx_n_comp, idx_freq], [level_per_component_in_hl, 90.0], [-20, -20], [20, 20]; color=HSL(0.0, 0.5, 0.95))
 
             # Summarize data and plot
-            for (idx_group, group) in enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])
+            for (idx_group, group) in enumerate(unique(df.hl_group)[[2, 3, 1]])
                 # Subset data
                 sub = @subset(df, :n_comp .== n_comp, :freq .== freq, :hl_group .== group, :include .== true)
                 sub_excl = @subset(df, :n_comp .== n_comp, :freq .== freq, :hl_group .== group, :include .== false)

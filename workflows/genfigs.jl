@@ -3,7 +3,7 @@ using ProfileAnalysis
 # Figure checklist
 # 
 # FIGURE 1 (LISTENER AUDIOGRAMS)
-# [X] intro.svg
+# [ ] intro.svg
 # 
 # FIGURE 2 (BEHAVIOR 1 KHZ)
 # [ ] 01_psychometric_functions.svg
@@ -39,10 +39,10 @@ using ProfileAnalysis
 # [ ] s02_pure_tone_control_rl_functions.svg
 #
 # FIGURE 9 (MODEL HEARING LOSS)
-# [X] 01_hi_sim_correlations.svg
-# [X] 02_hi_sim_cohc_correlations.svg
-# [X] 03_hi_sim_bowls_1k.svg
-# [X] 03_hi_sim_bowls_2k.svg
+# [ ] 01_hi_sim_correlations.svg
+# [ ] 02_hi_sim_cohc_correlations.svg
+# [ ] 03_hi_sim_bowls_1k.svg
+# [ ] 03_hi_sim_bowls_2k.svg
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -62,23 +62,16 @@ save(projectdir("plots", "intro", "intro.svg"), fig)
 # a level rove and the "rove effect" in dB for the 1-kHz condition for each group.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Generate psychometric functions
-#fig = genfig_beh_1kHz_psychometric_functions_v2()
-#save(projectdir("plots", "beh_1kHz", "01_psychometric_functions.svg"), fig)
-fig = genfig_beh_1kHz_psychometric_functions_v3()
+fig = genfig_beh_1kHz_psychometric_functions_v3(grouper_threeway)
 save(projectdir("plots", "beh_1kHz", "01_psychometric_functions_r1.svg"), fig)
  
 # Generate bowls
-#fig = genfig_beh_1kHz_bowls()
-#save(projectdir("plots", "beh_1kHz", "02_bowls.svg"), fig)
-fig = genfig_beh_1kHz_bowls_v2(grouper_pta4)
+fig = genfig_beh_1kHz_bowls_v2(grouper_threeway)
 save(projectdir("plots", "beh_1kHz", "02_bowls_r1.svg"), fig)
 
 # Generate "rove effect" plot
-# fig = genfig_beh_1kHz_rove_effects()
-# save(projectdir("plots", "beh_1kHz", "03_rove_effects.svg"), fig)
-fig = genfig_beh_1kHz_rove_effects_v2()
+fig = genfig_beh_1kHz_rove_effects_v2(grouper_threeway)
 save(projectdir("plots", "beh_1kHz", "03_rove_effects_r1.svg"), fig)
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Figure 3 // beh_frequency
@@ -89,11 +82,11 @@ save(projectdir("plots", "beh_1kHz", "03_rove_effects_r1.svg"), fig)
 # each HL group in each component-count condition.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Generate psychometric functions
-fig = genfig_beh_frequency_psychometric_functions()
+fig = genfig_beh_frequency_psychometric_functions(grouper_threeway)
 save(projectdir("plots", "beh_frequency", "01_psychometric_functions.svg"), fig)
 
 # Generate "frequency" bowls
-fig = genfig_beh_frequency_bowls()
+fig = genfig_beh_frequency_bowls(grouper_threeway)
 save(projectdir("plots", "beh_frequency", "02_bowls.svg"), fig)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
