@@ -230,8 +230,8 @@ function genfig_puretonecontrol_rl_functions()
     cf = 2000.0    # cf and tone frequency (Hz)
     fs = 100e3     # sampling rate (Hz)
     dur = 0.1      # duration (s)
-    spacing = 0.5  # spacing of flakers re: target (oct)
-    level_flanker = 70.0  # level of flankers (dB SPL)
+    level_pedestal = 70.0  # overall level of flanker stimulus, without component
+    n_comp = 21    # number of components in flanker + 1 (i.e., incl target)
 
     # Set RL function parameters
     levels = 30.0:2.5:90.0
@@ -247,24 +247,26 @@ function genfig_puretonecontrol_rl_functions()
     end
 
     # Map over levels and simulate RL function w/ flankers
+    freqs = LogRange(cf/5, cf*5, n_comp)  # calculate frequencies for this condition
+    target_comp=Int(ceil(length(freqs)/2))
+    background = map(freqs) do freq  # synthesize background complex
+        freq == freqs[target_comp] ? zeros(Int(round(dur*fs))) : pure_tone(freq, 0.0, dur, fs)
+    end
+    background = sum(background)
+    background = scale_dbspl(background, level_pedestal)
     rl_flanked = map(levels) do level
         # Synthesize stim 
         stim = scale_dbspl(pure_tone(cf, 0.0, dur, fs), level)
 
-        # Synthesize flankers
-        flanker1 = scale_dbspl(pure_tone(cf * 2.0 ^ -spacing, 0.0, dur, fs), level_flanker)
-        flanker2 = scale_dbspl(pure_tone(cf * 2.0 ^ spacing, 0.0, dur, fs), level_flanker)
-        flanker = flanker1 .+ flanker2
-
         # Compute rate
-        mean(compute(model, stim .+ flanker)[1])
+        mean(compute(model, stim .+ background)[1])
     end
 
     # Plot
     set_theme!(theme_carney; fontsize=12.0)
     fig = Figure(; resolution=(300, 260))
     ax = Axis(fig[1, 1]; xminorticksvisible=false)
-    vlines!(ax, [70.0]; color=:gray, linestyle=:dash, linewidth=1.0)
+    vlines!(ax, [total_to_comp(level_pedestal, n_comp)]; color=:gray, linestyle=:dash, linewidth=1.0)
     lines!(ax, levels, rl_pure; color=:black, linewidth=3.0)
     lines!(ax, levels, rl_flanked; color=:pink, linewidth=3.0)
 
@@ -293,34 +295,34 @@ Figure 8.
 function genfig_puretonecontrol_mechanism()
     # Set baseline parameters
     cf = 2000.0    # cf and tone frequency (Hz)
-    inc = 0.0      # increment (dB SRS)
-    level = 60.0   # sound level of unincremented tone (dB SPL)
+    level_pedestal = 70.0  # pedestal level
     fs = 100e3     # sampling rate (Hz)
     dur = 0.1      # duration (s)
 
     # Set flanker parameters
-    levels_flanker = 50.0:0.25:80.0
-    spacings = [0.125, 0.2, 0.5, 1.0, 2.0]
+    n_comps = [5, 13, 21, 29, 37]
+    levels_srs = -20.0:2.5:20.0
 
     # Set up model
     model = AuditoryNerveZBC2014(; cf=[cf], fractional=false, fs=fs, fiber_type="low")
 
-    # Simulate baseline difference
-    stim1 = scale_dbspl(pure_tone(cf, 0.0, dur, fs), level)
-    stim2 = scale_dbspl(pure_tone(cf, 0.0, dur, fs), level + srs_to_ΔL(inc))
-    δ_ref = mean(compute(model, stim2)[1]) - mean(compute(model, stim1)[1]) 
-
     # Simulate differences with flankers
-    results = map(spacings) do spacing
-        map(levels_flanker) do level_flanker
-            # Synthesize flankers
-            flanker1 = scale_dbspl(pure_tone(cf * 2.0 ^ -spacing, 0.0, dur, fs), level_flanker)
-            flanker2 = scale_dbspl(pure_tone(cf * 2.0 ^ spacing, 0.0, dur, fs), level_flanker)
-            flanker = flanker1 .+ flanker2
+    results = map(n_comps) do n_comp
+        map(levels_srs) do srs
+            # Calculate freqs
+            freqs = LogRange(cf/5, cf*5, n_comp)  # calculate frequencies for this condition
 
-            # Simulate delta
-            return mean(compute(model, stim2 .+ flanker)[1]) - 
-                   mean(compute(model, stim1 .+ flanker)[1])
+            # Simulate pure-tone at this SRS
+            iso_1 = profile_analysis_tone([cf]; pedestal_level=level_pedestal, dur=dur, increment=-Inf, fs=fs)
+            iso_2 = profile_analysis_tone([cf]; pedestal_level=level_pedestal, dur=dur, increment=srs, fs=fs)
+            iso_δ = mean(compute(model, iso_2)[1]) - mean(compute(model, iso_1)[1])
+
+            # Simulate PA tone at this SRS
+            complex_1 = profile_analysis_tone(freqs; pedestal_level=level_pedestal, dur=dur, increment=-Inf, fs=fs)
+            complex_2 = profile_analysis_tone(freqs; pedestal_level=level_pedestal, dur=dur, increment=srs, fs=fs)
+            complex_δ = mean(compute(model, complex_2)[1]) - mean(compute(model, complex_1)[1])
+
+            return 100 * (complex_δ - iso_δ) / iso_δ
         end
     end
 
@@ -330,30 +332,30 @@ function genfig_puretonecontrol_mechanism()
     fig = Figure(; resolution=(350, 350))
     ax = Axis(fig[1, 1])
     lns = map(zip(results, colors)) do (r, color)
-        # Transform result into percentage change
-        temp = 100 .* (r ./ δ_ref) .- 100.0
-
         # Check if line ever goes below 0 --- if so, plot portion below as dotted, otherwise just plot it
-        if any(temp .< 0.0)
+        if any(r .< 0.0)
             # Isolate portion above and below zero
-            temp_above = temp[temp .>= 0.0]
-            levels_above = levels_flanker[temp .>= 0.0]
-            temp_below = temp[temp .< 0.0]
-            levels_below = levels_flanker[temp .< 0.0]
+            temp_above = r[r.>= 0.0]
+            levels_above = levels_srs[r .>= 0.0]
+            temp_below = r[r .< 0.0]
+            levels_below = levels_srs[r .< 0.0]
 
             lines!(ax, levels_above, temp_above; linewidth=2.0, linestyle=:solid, color=color)
             lines!(ax, levels_below, temp_below; linewidth=2.0, linestyle=:dash, color=color)
         else
-            lines!(ax, levels_flanker, temp; linewidth=2.0, color=color)
+            lines!(ax, levels_srs, r; linewidth=2.0, color=color)
         end
     end
-    hlines!(ax, [0.0]; color=:black, linewidth=3.0)
+#    hlines!(ax, [0.0]; color=:black, linewidth=3.0)
+    ylims!(ax, 0.0, 200.0)
+    xlims!(ax, -25.0, 25.0)
 
-    ax.xlabel = "Flanker level (dB SPL)"
+    ax.xlabel = "Increment size (dB SRS)"
     ax.ylabel = "Increment response\nre: response w/o flankers (%)"
-    ax.yticks = -100.0:50.0:150.0
+    ax.yticks = 0.0:50.0:150.0
+    ax.xticks = -20:10:20
 
-    Legend(fig[2, 1], lns, string.(spacings), "Probe-flanker spacing (oct)"; orientation=:horizontal)
+    Legend(fig[2, 1], lns, string.(n_comps), "Component count"; orientation=:horizontal)
 
     fig
 end
