@@ -3,19 +3,19 @@ using ProfileAnalysis
 # Figure checklist
 # 
 # FIGURE 1 (LISTENER AUDIOGRAMS)
-# [ ] intro.svg
+# [x] intro.svg
 # 
 # FIGURE 2 (BEHAVIOR 1 KHZ)
-# [ ] 01_psychometric_functions.svg
-# [ ] 02_bowls.svg
-# [ ] 03_rove_effects.svg
+# [x] 01_psychometric_functions.svg
+# [x] 02_bowls.svg
+# [x] 03_rove_effects.svg
 #
 # FIGURE 3 (BEHAVIOR UNROVED) 
-# [ ] 01_psychometric_functions.svg
-# [ ] 02_bowls.svg
+# [x] 01_psychometric_functions.svg
+# [x] 02_bowls.svg
 #
 # FIGURE 4 (BEHAVIOR HEARING LOSS) 
-# [ ] 01_hearing_loss.svg
+# [x] 01_hearing_loss.svg
 # 
 # FIGURE 5 (MODEL INTRO)
 # [ ] 02_rlfs.svg
@@ -28,9 +28,9 @@ using ProfileAnalysis
 # TODO: Check on this figure and make sure that it is correct (need to regen)
 #
 # FIGURE 7 (MODEL BOWLS)
-# [ ] 01_density_and_frequency_bowls_simple.svg
-# [ ] 02_density_and_frequency_summary.svg
-# [ ] 03_density_and_modelbehavior_correlations.svg
+# [x] 01_density_and_frequency_bowls_simple.svg
+# [x] 02_density_and_frequency_summary.svg
+# [x] 03_density_and_modelbehavior_correlations.svg
 #
 # FIGURE 8 (MODEL SUPPRESSION)
 # [ ] s02_pure_tone_control.svg

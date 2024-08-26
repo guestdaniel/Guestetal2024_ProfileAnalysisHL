@@ -277,6 +277,10 @@ function genfig_sim_methods_example_responses()
     fig = Figure(; resolution=(400, 125))
     axs = [Axis(fig[1, i]) for i in 1:4]
 
+    # Add vertical lines at component frequencies
+    freqs = LogRange(1000.0/5, 1000.0*5, 21)  # for 1 kHz 21 components
+    [vlines!(ax, log2.(freqs ./ 1000.0); color=(:gray, 0.2)) for ax in axs]
+
     # Do each plot
     example_plot_pair!(axs[1], example_prep_sims(-10.0, "high")...; color=:black)
     example_plot_pair!(axs[2], example_prep_sims(-10.0, "low")...; color=:black)
@@ -346,8 +350,8 @@ end
 Plot in-place two population average-rate curves (r and t)
 """
 function example_plot_pair!(ax, cf, r, t; color=:black)
-    lines!(ax, cf, r; color=color)
-    lines!(ax, cf, t; color=:red)
+    lines!(ax, cf, r; color=color, linestyle=:solid)
+    lines!(ax, cf, t; color=:red, linestyle=:dot)
     ylims!(ax, 0.0, 1.25 * max(maximum(r), maximum(t)))
 end
 

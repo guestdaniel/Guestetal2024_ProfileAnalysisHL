@@ -134,13 +134,13 @@ end
 function color_group(group::AbstractString) 
     hl_colors = get_hl_colors()
     if group == "Normal hearing"
-        :black
+        hl_colors[1]
     elseif group == "Hearing impaired"
-        :red
+        hl_colors[2]
     elseif group == "Hearing loss\n(LF and HF)"
-        :red
+        hl_colors[3]
     elseif group == "Hearing loss\n(HF only)"
-        :pink
+        hl_colors[2]
     elseif group == "< 5 dB HL"
         hl_colors[1]
     elseif group == "5-15 dB HL"
@@ -235,10 +235,10 @@ end
 # Function to select markers based on freq
 function pick_marker(freq)
     @match freq begin
-        500.0 => :circle
-        1000.0 => :rect
-        2000.0 => :diamond
-        4000.0 => :pentagon
+        500.0 => '5' #:circle
+        1000.0 => '1' #:rect
+        2000.0 => '2' #:diamond
+        4000.0 => '4' #:pentagon
     end
 end
 

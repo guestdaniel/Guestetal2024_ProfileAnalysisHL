@@ -15,14 +15,14 @@ are faceted into different columns, while different model stages are faceted int
 rows. Model thresholds are plotted in red alongside behavioral data. This is the top half of
 Figure 7. 
 """
-function genfig_sim_bowls_density_and_frequency_bowls_simple()
+function genfig_sim_bowls_density_and_frequency_bowls_simple(grouper=grouper_threeway; color=:black)
     # Get full dataframe of simulated thresholds
     df = @chain load_simulated_thresholds_adjusted() begin  
     end
 
     # Fetch relevant behavioral data and average across listeners/repeats
-    beh = @chain fetch_behavioral_data() begin
-        @subset(:hl_group .== "< 5 dB HL", :include .== true)
+    beh = @chain grouper(fetch_behavioral_data()) begin
+        @subset(:hl_group .== "Normal hearing", :include .== true)
         avg_behavioral_data()
     end
 
@@ -50,17 +50,17 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple()
 
             # Plot bowls with scatters and lines, using solid + circles for fixed-level and 
             # dashed + squares for roved-level
-            lines!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
-            scatter!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=:black)
+            lines!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=color_group("Normal hearing"))
+            scatter!(ax, (1:5) .+ (idx-1)*7, beh_fixed.threshold; color=color_group("Normal hearing"))
             if nrow(beh_roved) > 0
-                lines!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, linestyle=:dash)
-                scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:black, marker=:rect)
+                lines!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=color_group("Normal hearing"), linestyle=:dash)
+                scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=color_group("Normal hearing"), marker=:rect)
                 scatter!(ax, (1:5) .+ (idx-1)*7, beh_roved.threshold; color=:white, marker=:rect, markersize=4.0)
             end
-            lines!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=:red)
-            scatter!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=:red)
-            lines!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:red, linestyle=:dash)
-            scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:red, marker=:rect)
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=color)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_fixed.θ; color=color)
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=color, linestyle=:dash)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=color, marker=:rect)
             scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved.θ; color=:white, marker=:rect, markersize=4.0)
         end
 
@@ -192,15 +192,15 @@ counts as a function of target frequency. Different observer strategies are face
 different columns, while different model stages are faceted into different rows. This is the
 bottom-left of Figure 7. 
 """
-function genfig_sim_bowls_frequency_summary()
+function genfig_sim_bowls_frequency_summary(grouper=grouper_threeway; color=:black)
     # Get full dataframe of simulated thresholds, subset to include fixed-level unadjusted only
     df = @chain load_simulated_thresholds_adjusted() begin  
         @subset(:rove_size .== 0.001, :adjusted .== false)
     end
 
     # Fetch relevant behavioral data and average across listeners/repeats
-    beh = @chain fetch_behavioral_data() begin
-        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL", :include .== true)
+    beh = @chain grouper(fetch_behavioral_data()) begin
+        @subset(:rove .== "fixed level", :hl_group .== "Normal hearing", :include .== true)
         avg_behavioral_data()
     end
 
@@ -228,10 +228,10 @@ function genfig_sim_bowls_frequency_summary()
         end
 
         # Plot curves with markers + lines, using red for simulated and black for real data
-        scatter!(ax, 1.0:1.0:4.0, df_subset.θ; color=:red, markersize=10.0)
-        lines!(ax, 1.0:1.0:4.0, df_subset.θ; color=:red, linewidth=2.0)
-        scatter!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=:black, markersize=10.0)
-        lines!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=:black, linewidth=2.0)
+        scatter!(ax, 1.0:1.0:4.0, df_subset.θ; color=color, markersize=10.0)
+        lines!(ax, 1.0:1.0:4.0, df_subset.θ; color=color, linewidth=2.0)
+        scatter!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=color_group("Normal hearing"), markersize=10.0)
+        lines!(ax, 1.0:1.0:4.0, beh_subset.threshold; color=color_group("Normal hearing"), linewidth=2.0)
 
         # Manually set x-axis ticks
         ax.xticks = (
@@ -269,15 +269,15 @@ columns, while different model stages are faceted into different rows. Marker sh
 indicates target frequency, using the mapping provided by the function `pick_marker(freq)`.
 This is the bottom right of Figure 7. 
 """
-function genfig_sim_bowls_modelbehavior_scatterplots()
+function genfig_sim_bowls_modelbehavior_scatterplots(grouper=grouper_threeway)
     # Get full dataframe
     df = @chain load_simulated_thresholds_adjusted() begin  
         @subset(:rove_size .== 0.001, :adjusted .== false)
     end
 
     # Compile relevant behavioral data
-    beh = @chain fetch_behavioral_data() begin
-        @subset(:rove .== "fixed level", :hl_group .== "< 5 dB HL")
+    beh = @chain grouper(fetch_behavioral_data()) begin
+        @subset(:rove .== "fixed level", :hl_group .== "Normal hearing")
         avg_behavioral_data()
         @orderby(:n_comp, :freq)
     end
@@ -320,7 +320,7 @@ function genfig_sim_bowls_modelbehavior_scatterplots()
         β₀ = coef(m)[1]
         β = coef(m)[2]
         lines!(ax, x̂, β₀ .+ x̂ .* β; color=:gray, linewidth=2.0)
-        text!(ax, [-30.0], [0.0]; text=string(varexp))
+        text!(ax, [-33.0], [0.0]; text=string(varexp) * "%")
 
         # Set limits
         ylims!(ax, -35.0, 10.0)
