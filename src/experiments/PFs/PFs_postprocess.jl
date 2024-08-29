@@ -384,8 +384,14 @@ function load_simulated_thresholds_extended()
     load(joinpath("data", "sim_pro", "model_thresholds_extended.jld2"))["df"]
 end
 
+# Numerically optimize constant that minimizes RMS error between vectors θ_hat and θ
 function find_constant(θ_hat, θ)
     Optim.minimizer(optimize(p -> rms((p[1] .+ θ_hat) .- θ), [0.0], BFGS()))[1]
+end
+
+# Choose constant to minimize RMS error between vectors θ_hat and θ as the mean of their differences
+function find_constant_simple(θ_hat, θ)
+    mean(θ .- θ_hat)
 end
 
 function compare_behavior_to_simulations()
@@ -412,7 +418,7 @@ function compare_behavior_to_simulations()
         groupby([:model, :mode, :rove_size])
 
         # Compute constant that optimizes match between behavior and model across ALL conditions
-        @transform(:offset = find_constant(:θ, beh.threshold))
+        @transform(:offset = find_constant_simple(:θ, beh.threshold))
 
         # Compute thresholds with offset
         @transform(:θ_adjusted = :θ .+ :offset)

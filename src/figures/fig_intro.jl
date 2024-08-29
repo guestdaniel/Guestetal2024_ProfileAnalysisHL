@@ -41,7 +41,7 @@ function genfig_subj_audiograms()
 
         # Plot black lines and colored points to indicate HL group on main plot
         jitter = randn(length(θ)) ./ 30
-        freqs = freqs .* 2 .^ (jitter)
+#        freqs = freqs .* 2 .^ (jitter)
         lines!(
             ax, 
             freqs,
@@ -53,6 +53,8 @@ function genfig_subj_audiograms()
             freqs,
             θ,
             color=color_group(group),
+            marker=marker_group(group),
+            markersize=marker_size_group(group),
         )
     end
 

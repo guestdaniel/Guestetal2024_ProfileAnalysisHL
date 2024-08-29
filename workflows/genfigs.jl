@@ -191,6 +191,10 @@ save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls_simple.svg
 fig = genfig_sim_bowls_frequency_summary()
 save(projectdir("plots", "sim_bowls", "02_density_and_frequency_summary.svg"), fig)
 
+# Create summary showing patterns w.r.t. roving at 1 kHz for NH versus model
+fig = genfig_sim_bowls_roving_summary()
+save(projectdir("plots", "sim_bowls", "03_density_and_roving_summary.svg"), fig)
+
 # Create summary showing correlations between model and simulated responses
 fig = genfig_sim_bowls_modelbehavior_scatterplots()
 save(projectdir("plots", "sim_bowls", "03_density_and_modelbehavior_correlations.svg"), fig)

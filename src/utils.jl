@@ -1,7 +1,7 @@
 export logistic, logistic_fit, logistic_predict, hearing_group, hl_offsets,
     hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function, modelstr,
     variance_explained, get_hl_colors, color_group, marker_group, fetch_behavioral_data,
-    avg_behavioral_data, fetch_audiograms, quickfitlm, pick_marker, pick_marker2
+    avg_behavioral_data, fetch_audiograms, quickfitlm, pick_marker, pick_marker2, marker_size_group
 
 """
     logistic(x, λ; L, offset)
@@ -170,6 +170,26 @@ function marker_group(group::Float64)
         :utriangle
     else
         :cross
+    end
+end
+
+function marker_group(group::String)
+    if group == "Normal hearing"
+        :circle 
+    elseif group == "Hearing loss\n(HF only)"
+        :utriangle
+    else
+        :cross
+    end
+end
+
+function marker_size_group(group::String)
+    if group == "Normal hearing"
+        10.0
+    elseif group == "Hearing loss\n(HF only)"
+        12.0
+    else
+        12.0
     end
 end
 
