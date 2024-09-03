@@ -9,8 +9,11 @@ end
 # Run main simulations
 #run(ProfileAnalysis_PFTemplateObserver())
 
+# Run reduced-resolution main simulations
+run(ProfileAnalysis_PFTemplateObserver_Reduced())
+
 # Run hearing-impaired simulations 
-run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
+#run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
 
 # Run wideband control simulations
 #run(ProfileAnalysis_PFTemplateObserver_WidebandControl())

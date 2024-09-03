@@ -14,6 +14,7 @@ export ProfileAnalysis_PF,
 # Declare experiment types
 abstract type ProfileAnalysis_PF <: ProfileAnalysisExperiment end
 struct ProfileAnalysis_PFTemplateObserver <: ProfileAnalysis_PF end
+struct ProfileAnalysis_PFTemplateObserver_Reduced <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFTemplateObserver_Extended <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFTemplateObserver_PureToneControl <: ProfileAnalysis_PF end
 struct ProfileAnalysis_PFTemplateObserver_WidebandControl <: ProfileAnalysis_PF end
@@ -56,6 +57,53 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
 
     vcat(sims...)
 end
+
+"""
+    setup(::ProfileAnalysis_PFTemplateObserver)
+
+Set up all template-based psychometric function simulations (reduced resolution matching HI sims)
+
+Set up all template-based psychometric function simulations, over the full range of
+simulated parameter values:
+    - Center frequencies of 0.5-4 kHz
+    - Component counts from 5-37
+    - Rove sizes from 0.001 (nominal 0) to 10 dB
+    - Increments from -45 to 5 dB SRS
+
+Returns a vector of simulation objects that can be evaluted with `simulate`.
+"""
+function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Reduced)
+    # Choose frequencies, component counts, and rove sizes to loop over
+    center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
+    n_comps = [5, 13, 21, 29, 37]
+    rove_sizes = [0.001, 10.0]
+
+    # Configure other values
+    increments=vcat(-999.9, -45.0:2.5:5.0)
+
+    # Get simulations
+    sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
+        # Get possible models
+        models = Utilities.setup(experiment, center_freq; n_cf=n_cf_reduced)
+
+        # Loop over models and assemble PFs
+        map(models) do model
+            Utilities.setup(
+                experiment, 
+                model, 
+                increments, 
+                center_freq, 
+                n_comp, 
+                rove_size;
+                n_rep_template=n_rep_template_reduced,
+                n_rep_trial=n_rep_trial_reduced,
+            )
+        end
+    end
+
+    vcat(sims...)
+end
+
 
 """
     setup(::ProfileAnalysis_PFTemplateObserver_Extended)
