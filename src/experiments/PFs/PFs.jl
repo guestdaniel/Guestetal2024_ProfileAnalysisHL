@@ -4,6 +4,7 @@
 # Handle exports
 export ProfileAnalysis_PF, 
        ProfileAnalysis_PFTemplateObserver, 
+       ProfileAnalysis_PFTemplateObserver_Reduced,
        ProfileAnalysis_PFTemplateObserver_Extended,
        ProfileAnalysis_PFObserver,
        ProfileAnalysis_PFTemplateObserver_HearingImpaired,
@@ -74,9 +75,9 @@ Returns a vector of simulation objects that can be evaluted with `simulate`.
 """
 function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Reduced)
     # Choose frequencies, component counts, and rove sizes to loop over
-    center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
+    center_freqs = [1000.0, 2000.0]
     n_comps = [5, 13, 21, 29, 37]
-    rove_sizes = [0.001, 10.0]
+    rove_sizes = [0.001]
 
     # Configure other values
     increments=vcat(-999.9, -45.0:2.5:5.0)
@@ -89,7 +90,7 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Reduced)
         # Loop over models and assemble PFs
         map(models) do model
             Utilities.setup(
-                experiment, 
+                ProfileAnalysis_PFTemplateObserver(), 
                 model, 
                 increments, 
                 center_freq, 
