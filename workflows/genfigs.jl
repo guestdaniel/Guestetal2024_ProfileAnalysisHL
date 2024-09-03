@@ -241,15 +241,9 @@ save(projectdir("plots", "sim_bowls", "s02_pure_tone_control_rl_functions.svg"),
 # fig = genfig_audiograms_and_cohc()
 # save(projectdir("plots", "sim_hi", "s01_audiograms_and_cohc_cihc.svg"), fig)
 
-fig = genfig_sim_hi_behavior_correlations()
+fig = genfig_sim_hi_behavior_correlations(2e3)
 save(projectdir("plots", "sim_hi", "01_hi_sim_correlations.svg"), fig)
 
-fig = genfig_sim_hi_cohc_correlations()
-save(projectdir("plots", "sim_hi", "02_hi_sim_cohc_correlations.svg"), fig)
-
-fig = genfig_sim_hi_bowls(1000.0)
-save(projectdir("plots", "sim_hi", "03_hi_sim_bowls_1k.svg"), fig)
-
-fig = genfig_sim_hi_bowls(2000.0)
+fig = genfig_sim_hi_bowls(2e3)
 save(projectdir("plots", "sim_hi", "03_hi_sim_bowls_2k.svg"), fig)
 

@@ -129,17 +129,16 @@ model type and observer strategy. Color indicates the HL group. Variance explain
 for linear models fit through each HL group separately in each panel are printed in blank
 space near the left.
 """
-function genfig_sim_hi_behavior_correlations()
+function genfig_sim_hi_behavior_correlations(freq=2e3, grouper=grouper_threeway)
     # Load simulated thresolds 
     sim = @chain load_simulated_thresholds_hi() begin 
         @subset(:rove_size .== 0.001)  # as of 9/21/2023, only includes fixed-level, but this ensures it!
-        @subset(:center_freq .== 2000.0)
+        @subset(:center_freq .== freq)
     end
 
     # Load and summarize behavioral data
-    beh = @chain fetch_behavioral_data() begin
-        # Subset to only include unroved data at 1 and 2 kHz for available subjs
-        @subset(in.(:freq, Ref([2000.0])))
+    beh = @chain grouper(fetch_behavioral_data()) begin
+        @subset(in.(:freq, Ref([freq])))
         @subset(:rove .== "fixed level")
 
         # Group by target frequency, number of components, and subject
@@ -169,12 +168,12 @@ function genfig_sim_hi_behavior_correlations()
         @assert all(beh_subset.n_comp.== sim_subset.n_comp)
 
         # Plot data + regression lines for each HL group separately
-        map(enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])) do (idx, label)
+        map(enumerate(unique(beh.hl_group)[[2, 1, 3]])) do (idx, group)
             # Subset data
-            idxs = beh_subset.hl_group .== label
+            idxs = beh_subset.hl_group .== group 
 
             # Configure color
-            color=(get_hl_colors()[idx], label == "> 15 dB HL" ? 1.0 : 0.5)
+            color=(color_group(group), group == "Hearing loss\n(LF and HF)" ? 1.0 : 0.5)
 
             # Plot scatter (for included "valid" data)
             scatter!(
@@ -205,7 +204,7 @@ function genfig_sim_hi_behavior_correlations()
 
             # Plot lines and text
             lines!(ax, x̂, ŷ; color=color)
-            text!(ax, [-33.0], [-20.0 + idx*5]; text="$(round(ρ^2*100; digits=1))", color=color)
+            text!(ax, [-33.0], [-20.0 + idx*5]; text="$(round(ρ^2*100; digits=1))%", color=color)
         end
     end
 
@@ -383,14 +382,15 @@ audiogram-matched hearing-impaired simulations. Can show data only for 1 kHz or 
 Color and horizontal arrangement indicate HL group, while observer strategy and model stage
 are faceted in a grid.
 """
-function genfig_sim_hi_bowls(freq=1000.0)
+function genfig_sim_hi_bowls(freq=1000.0, grouper=grouper_threeway)
     # Load simulated thresolds 
     sim = @chain load_simulated_thresholds_hi() begin 
         @subset(:rove_size .== 0.001)  # as of 9/21/2023, only includes fixed-level, but this ensures it!
     end
 
     # Load and summarize behavioral data
-    beh = @chain fetch_behavioral_data() begin
+    # TODO: double check on how to handle nclude here
+    beh = @chain grouper(fetch_behavioral_data()) begin
         # Subset to only include unroved data at 1 and 2 kHz for available subjs
         @subset(in.(:freq, Ref([1000.0, 2000.0])))
         @subset(:rove .== "fixed level")  # see comment above re: simulations
@@ -420,7 +420,7 @@ function genfig_sim_hi_bowls(freq=1000.0)
     modes = ["singlechannel", "templatebased"]
     models = ["AuditoryNerveZBC2014_low", "InferiorColliculusSFIEBE", "InferiorColliculusSFIEBS"]
     map(zip(axs, Iterators.product(models, modes))) do (ax, (model, mode))
-        for (idx, group) in enumerate(["< 5 dB HL", "5-15 dB HL", "> 15 dB HL"])
+        for (idx, group) in enumerate(unique(beh.hl_group)[[2, 1, 3]])
             # Subset data and compute averages
             sub_beh = @chain beh begin
                 @subset(:hl_group .== group, :freq .== freq, :include .== true)
@@ -443,16 +443,24 @@ function genfig_sim_hi_bowls(freq=1000.0)
 
             # Plot bowl
             lines!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold; color=color_group(group))
-            errorbars!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold, 1.96 .* sub_beh.stderr; color=color_group(group))
+            if mean(sub_beh.threshold) > mean(sub_sim.threshold)
+                errorbars!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold, zeros(nrow(sub_beh)), 1.96 .* sub_beh.stderr; color=color_group(group))
+            else
+                errorbars!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold, 1.96 .* sub_beh.stderr, zeros(nrow(sub_beh)); color=color_group(group))
+            end
             scatter!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold; color=color_group(group))
 
             lines!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold; color=color_group(group), linestyle=:dash)
-            errorbars!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold, 1.96 .* sub_sim.stderr; color=color_group(group))
+            if mean(sub_beh.threshold) > mean(sub_sim.threshold)
+                errorbars!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold, 1.96 .* sub_sim.stderr, zeros(nrow(sub_sim)); color=color_group(group))
+            else
+                errorbars!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold, zeros(nrow(sub_sim)), 1.96 .* sub_sim.stderr; color=color_group(group))
+            end
             scatter!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold; color=color_group(group), marker=:rect)
 
         end
         # Adjust limits and ticks 
-        ylims!(ax, -35.0, 10.0)
+        ylims!(ax, -30.0, 15.0)
         ax.yticks = -30:10:10
 
         # Set xticks
