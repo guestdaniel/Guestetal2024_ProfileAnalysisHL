@@ -1,5 +1,7 @@
 export genfig_sim_bowls_density_and_frequency_bowls_simple,  # Figure 7A
+       genfig_sim_bowls_density_and_frequency_bowls_simple_roved_vs_unroved,  # Figure S1A
        genfig_sim_bowls_density_and_frequency_bowls_simple_extended,
+       genfig_sim_bowls_density_and_frequency_bowls_reduced_vs_full,
        genfig_sim_bowls_frequency_summary,                   # Figure 7B
        genfig_sim_bowls_roving_summary,
        genfig_sim_bowls_modelbehavior_scatterplots           # Figure 7C
@@ -92,6 +94,141 @@ function genfig_sim_bowls_density_and_frequency_bowls_simple(grouper=grouper_thr
     # Return
     fig
 end
+
+"""
+    genfig_sim_bowls_density_and_frequency_bowls_reduced_vs_full()
+"""
+function genfig_sim_bowls_density_and_frequency_bowls_reduced_vs_full(; color=:black, fontsize=10.0)
+    # Get full dataframe of simulated thresholds
+    df_full = @chain load_simulated_thresholds_adjusted() begin  
+        @subset(:adjusted .== false)
+        @subset(:rove_size .== 0.001)
+        @subset(:mode .!= "profilechannel")
+        @subset(in.(:center_freq, Ref([1000.0, 2000.0])))
+    end
+
+    # Get full dataframe of simulated thresholds
+    df_reduced = @chain load_simulated_thresholds_reduced() begin  
+    end
+
+    # Set up figure (3x2 design)
+    set_theme!(theme_carney; fontsize=13.0)
+    fig = Figure(; resolution=(650, 450))
+    axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:2]
+
+    # Loop over all combinations of observer ("mode") and model
+    itr = collect(Iterators.product(unique(df_full.model), unique(df_full.mode)))
+    map(zip(itr, axs)) do ((model, mode), ax)
+        # Subset simulated data according to observer and model
+        full_subset = @subset(df_full, :model .== model, :mode .== mode)
+        reduced_subset = @subset(df_reduced, :model .== model, :mode .== mode)
+
+        # Plot each bowl in order of target frequency
+        map(enumerate([1000.0, 2000.0])) do (idx, freq)
+            # Plot bowls with scatters and lines, using solid + circles for fixed-level and 
+            # dashed + squares for roved-level
+            x = @subset(full_subset, :center_freq .== freq).θ
+            y = @subset(reduced_subset, :center_freq .== freq).θ
+            scatter!(ax, (1:5) .+ (idx-1)*7, x .- y; color=:black)
+        end
+
+        # Manually set x-axis ticks and labels
+        ax.xticks = (
+            vcat([(1:5) .+ (i-1)*7 for i in 1:4]...),
+            repeat(["5", "13", "21", "29", "37"], 4),
+        )
+
+        # Adjust y-axis limits
+        ylims!(ax, -5.0, 5.0)
+        ax.yticks = -10.0:2.5:10.0
+        hlines!(ax, [0.0]; color=:gray)
+        hlines!(ax, [-2.5, 2.5]; color=:red)
+    end
+
+    # Print out overall error metrics, first sorting both dataframes in the same way
+    df_full = @orderby(df_full, :n_comp, :center_freq, :mode, :model)
+    df_reduced = @orderby(df_reduced, :n_comp, :center_freq, :mode, :model)
+    println("ME: $(round(mean(df_full.θ .- df_reduced.θ); digits=2)) dB")
+    println("MAE: $(round(mean(abs.(df_full.θ .- df_reduced.θ)); digits=2)) dB")
+
+    # Add superlabels to x/y-axes
+    Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2, fontsize=15.0); colgap!(fig.layout, 1, Relative(0.01));
+    Label(fig[4, 1:2], "Number of components // Target frequency (Hz)"; fontsize=15.0); rowgap!(fig.layout, 3, Relative(0.05));
+
+    # Adjust colgaps and neaten grid
+    neaten_grid!(axs)
+    colgap!(fig.layout, 2, Relative(0.01))
+    rowgap!(fig.layout, 1, Relative(0.01))
+    rowgap!(fig.layout, 2, Relative(0.01))
+
+    # Return
+    fig
+end
+
+
+"""
+    genfig_sim_bowls_density_and_frequency_bowls_simple_roved_vs_unroved()
+
+Roved vs unroved model thresholds
+"""
+function genfig_sim_bowls_density_and_frequency_bowls_simple_roved_vs_unroved(; color=:black)
+    # Get full dataframe of simulated thresholds
+    df = @chain load_simulated_thresholds_adjusted() begin  
+    end
+
+    # Set up figure (3x2 design)
+    set_theme!(theme_carney; fontsize=13.0)
+    fig = Figure(; resolution=(650, 450))
+    axs = [Axis(fig[i, j]; xticklabelrotation=π/2, xminorticksvisible=false) for i in 1:3, j in 1:2]
+
+    # Loop over all combinations of observer ("mode") and model
+    itr = collect(Iterators.product(unique(df.model), unique(df.mode)[[1, 3]]))
+    map(zip(itr, axs)) do ((model, mode), ax)
+        # Subset simulated data according to observer and model
+        df_subset = @subset(df, :model .== model, :mode .== mode)
+
+        # Plot each bowl in order of target frequency
+        map(enumerate([500.0, 1000.0, 2000.0, 4000.0])) do (idx, freq)
+            # Subset sims to current target frequency and fixed level, then further divide into adj and non-adj
+            sims = @subset(df_subset, :center_freq .== freq)
+            sims_fixed_raw = @subset(sims, :rove_size .== 0.001, :adjusted .== false)
+            sims_roved_raw = @subset(sims, :rove_size .== 10.0, :adjusted .== false)
+
+            # Plot bowls with scatters and lines, using solid + circles for fixed-level and 
+            # dashed + squares for roved-level
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_fixed_raw.θ; color=color)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_fixed_raw.θ; color=color, marker=:circle)
+            lines!(ax, (1:5) .+ (idx-1)*7, sims_roved_raw.θ; color=color)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved_raw.θ; color=color, marker=:rect)
+            scatter!(ax, (1:5) .+ (idx-1)*7, sims_roved_raw.θ; marker=:rect, markersize=5.0, color=:white)
+        end
+
+        # Manually set x-axis ticks and labels
+        ax.xticks = (
+            vcat([(1:5) .+ (i-1)*7 for i in 1:4]...),
+            repeat(["5", "13", "21", "29", "37"], 4),
+        )
+
+        # Adjust y-axis limits
+        ylims!(ax, -35.0, 10.0)
+        ax.yticks = -30.0:10.0:10.0
+    end
+    
+    # Add superlabels to x/y-axes
+    Label(fig[:, 0], "Threshold (dB SRS)"; rotation=π/2, fontsize=15.0); colgap!(fig.layout, 1, Relative(0.01));
+    Label(fig[4, 1:2], "Number of components // Target frequency (Hz)"; fontsize=15.0); rowgap!(fig.layout, 3, Relative(0.05));
+
+    # Adjust colgaps and neaten grid
+    neaten_grid!(axs)
+    colgap!(fig.layout, 2, Relative(0.01))
+    rowgap!(fig.layout, 1, Relative(0.01))
+    rowgap!(fig.layout, 2, Relative(0.01))
+
+    # Return
+    fig
+end
+
+
 
 """
     genfig_sim_bowls_density_and_frequency_bowls_simple_extended()

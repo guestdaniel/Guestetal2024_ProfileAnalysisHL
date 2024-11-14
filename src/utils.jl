@@ -1,7 +1,7 @@
 export logistic, logistic_fit, logistic_predict, hearing_group, hl_offsets,
     hl_to_spl, spl_to_hl, total_to_comp, fit_psychometric_function, modelstr,
     variance_explained, get_hl_colors, color_group, marker_group, fetch_behavioral_data,
-    avg_behavioral_data, fetch_audiograms, quickfitlm, pick_marker, pick_marker2, marker_size_group
+    avg_behavioral_data, fetch_audiograms, quickfitlm, pick_marker, pick_marker2, marker_size_group, long2short
 
 """
     logistic(x, λ; L, offset)
@@ -270,5 +270,16 @@ function pick_marker2(n_comp)
         21 => :hexagon
         29 => :circle
         37 => :ltriangle
+    end
+end
+
+# Functon to map from long-form names to short names
+function long2short(name)
+    if name == "Normal hearing"
+        "NH"
+    elseif name == "Hearing loss\n(HF only)"
+        "HI-HF"
+    else
+        "HI"
     end
 end

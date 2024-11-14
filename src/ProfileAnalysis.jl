@@ -18,7 +18,6 @@ using Parameters
 using Statistics
 using Random
 using Utilities
-using UtilitiesViz
 using ProgressMeter
 using Printf
 using Match

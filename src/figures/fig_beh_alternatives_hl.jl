@@ -64,7 +64,7 @@ function genfig_beh_1kHz_bowls_v2(grouper=grouper_threeway)
                 scatter!(axs[idx_group], sub.n_comp, sub.threshold; color=:white, markersize=10.0/2, marker=rove == "fixed level" ? :circle : :rect)
             end
         end
-        axs[idx_group].title = group * "\n(n = $(length(unique(df[df.hl_group .== group, :].subj))))"
+        axs[idx_group].title = long2short(group) * " (n = $(length(unique(df[df.hl_group .== group, :].subj))))"
     end
 
     # Adjust spacing
@@ -151,7 +151,7 @@ function genfig_beh_1kHz_rove_effects_v2(grouper=grouper_threeway)
         scatter!(axs[idx_group], sub.n_comp, sub.diff; color=color_group(group), marker=:utriangle)
         scatter!(axs[idx_group], ind.n_comp .+ 2, Float64.(ind.diff); color=color_group(group), markersize=fig_defaults["markersize"]/1.4, marker=:utriangle)
         scatter!(axs[idx_group], ind_excl.n_comp .+ 2, Float64.(ind_excl.diff); color=:gray, markersize=fig_defaults["markersize"]/1.4, marker=:xcross)
-        axs[idx_group].title = group * "\n(n = $(length(unique(df[df.hl_group .== group, :].subj))))"
+        axs[idx_group].title = long2short(group) * " (n = $(length(unique(df[df.hl_group .== group, :].subj))))"
     end
 
     # Adjust spacing
@@ -263,8 +263,6 @@ on left side of Figure 1 as Subfigure A. In contrast to the original figure code
 version displays average psychometric functions derived by fitting individual psychometric 
 functions and then averaging parameter values, rather than averaging data and then 
 fitting a group-level psychometric function.
-
-TODO: Migrate to replace original
 """
 function genfig_beh_1kHz_psychometric_functions_v3(grouper=grouper_threeway)
     # Load in data
@@ -289,7 +287,6 @@ function genfig_beh_1kHz_psychometric_functions_v3(grouper=grouper_threeway)
 
         # Filter out places where we have too little data (we want at least 2 subjects at each point)
         transform(:μ => (x -> length(x)) => :count)
-#        @subset(:count .> 2)
 
         # Group again
         groupby([:rove, :increment, :n_comp, :hl_group])
@@ -392,7 +389,7 @@ function genfig_beh_1kHz_psychometric_functions_v3(grouper=grouper_threeway)
             end
             
             if idx_n_comp == 1
-                axs[idx_n_comp, idx_group].title = group * "\n(n = $(length(unique(df[df.hl_group .== group, :].subj))))"
+                axs[idx_n_comp, idx_group].title = long2short(group) * " (n = $(length(unique(df[df.hl_group .== group, :].subj))))"
             end
 
         end

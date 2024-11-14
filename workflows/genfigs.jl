@@ -18,14 +18,13 @@ using ProfileAnalysis
 # [x] 01_hearing_loss.svg
 # 
 # FIGURE 5 (MODEL INTRO)
-# [ ] 02_rlfs.svg
-# [ ] 03_tcs.svg
-# [ ] 04_mtfs.svg
-# [ ] 05_example_responses.svg
+# [x] 02_rlfs.svg
+# [x] 03_tcs.svg
+# [x] 04_mtfs.svg
+# [x] 05_example_responses.svg
 #
 # FIGURE 6 (MODEL PROFILES)
-# [ ] 01_unroved_patterns_$.svg
-# TODO: Check on this figure and make sure that it is correct (need to regen)
+# [x] 01_unroved_patterns_$.svg
 #
 # FIGURE 7 (MODEL BOWLS)
 # [x] 01_density_and_frequency_bowls_simple.svg
@@ -33,16 +32,16 @@ using ProfileAnalysis
 # [x] 03_density_and_modelbehavior_correlations.svg
 #
 # FIGURE 8 (MODEL SUPPRESSION)
-# [ ] s02_pure_tone_control.svg
-# [ ] s02_pure_tone_control_stackplots.svg
-# [ ] s02_pure_tone_control_flankers.svg
-# [ ] s02_pure_tone_control_rl_functions.svg
+# [x] s02_pure_tone_control.svg
+# [x] s02_pure_tone_control_stackplots.svg
+# [x] s02_pure_tone_control_flankers.svg
+# [x] s02_pure_tone_control_rl_functions.svg
 #
 # FIGURE 9 (MODEL HEARING LOSS)
-# [ ] 01_hi_sim_correlations.svg
-# [ ] 02_hi_sim_cohc_correlations.svg
-# [ ] 03_hi_sim_bowls_1k.svg
-# [ ] 03_hi_sim_bowls_2k.svg
+# [x] 01_hi_sim_correlations.svg
+# [x] 02_hi_sim_cohc_correlations.svg
+# [x] 03_hi_sim_bowls_1k.svg
+# [x] 03_hi_sim_bowls_2k.svg
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,6 +186,9 @@ save(projectdir("plots", "sim_responses", "significance_colorbar.svg"), fig)
 fig = genfig_sim_bowls_density_and_frequency_bowls_simple()
 save(projectdir("plots", "sim_bowls", "01_density_and_frequency_bowls_simple.svg"), fig)
 
+fig = genfig_sim_bowls_density_and_frequency_bowls_simple_roved_vs_unroved()
+save(projectdir("plots", "sim_bowls", "s01_density_and_frequency_bowls_roved_vs_unroved.svg"), fig)
+
 # Create summary showing patterns w.r.t. frequency for NH versus model
 fig = genfig_sim_bowls_frequency_summary()
 save(projectdir("plots", "sim_bowls", "02_density_and_frequency_summary.svg"), fig)
@@ -241,8 +243,11 @@ save(projectdir("plots", "sim_bowls", "s02_pure_tone_control_rl_functions.svg"),
 # fig = genfig_audiograms_and_cohc()
 # save(projectdir("plots", "sim_hi", "s01_audiograms_and_cohc_cihc.svg"), fig)
 
-fig = genfig_sim_hi_behavior_correlations(2e3)
-save(projectdir("plots", "sim_hi", "01_hi_sim_correlations.svg"), fig)
+# fig = genfig_sim_hi_behavior_correlations(2e3)
+# save(projectdir("plots", "sim_hi", "01_hi_sim_correlations.svg"), fig)
+
+fig = genfig_sim_hi_bowls(1e3)
+save(projectdir("plots", "sim_hi", "03_hi_sim_bowls_1k.svg"), fig)
 
 fig = genfig_sim_hi_bowls(2e3)
 save(projectdir("plots", "sim_hi", "03_hi_sim_bowls_2k.svg"), fig)

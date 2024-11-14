@@ -209,7 +209,8 @@ function genfig_beh_frequency_bowls(grouper=grouper_threeway)
             println("$n_comp $group $sub")
 
             # Plot bowl
-            errorbars!(axs[idx_n_comp], 1:nrow(sub), sub.threshold, 1.96 .* sub.stderr; color=color_group(group))
+            idxs_eb = (sub.n .> 2)
+            errorbars!(axs[idx_n_comp], (1:nrow(sub))[idxs_eb], sub.threshold[idxs_eb], 1.96 .* sub.stderr[idxs_eb]; color=color_group(group))
             scatter!(axs[idx_n_comp], 1:nrow(sub), sub.threshold; color=color_group(group))
             lines!(axs[idx_n_comp], 1:nrow(sub), sub.threshold; color=color_group(group))
         end

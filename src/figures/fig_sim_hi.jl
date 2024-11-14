@@ -132,17 +132,25 @@ space near the left.
 function genfig_sim_hi_behavior_correlations(freq=2e3, grouper=grouper_threeway)
     # Load simulated thresolds 
     sim = @chain load_simulated_thresholds_hi() begin 
+        # Subset data
         @subset(:rove_size .== 0.001)  # as of 9/21/2023, only includes fixed-level, but this ensures it!
         @subset(:center_freq .== freq)
+
+        # Group by freq, hl_group, subj, etc.
+        groupby([:center_freq, :subj, :mode, :model])  # drop n_comp to pool across n_comp
+
+        # Compute average threshold
+        @combine(:threshold = mean(:θ))
     end
 
     # Load and summarize behavioral data
     beh = @chain grouper(fetch_behavioral_data()) begin
+        # Subset data
         @subset(in.(:freq, Ref([freq])))
         @subset(:rove .== "fixed level")
 
         # Group by target frequency, number of components, and subject
-        groupby([:freq, :n_comp, :hl_group, :subj, :include])
+        groupby([:freq, :hl_group, :subj])  # drop n_comp to pool across n_comp
 
         # Compute average threshold
         @combine(:threshold = mean(:threshold))
@@ -157,20 +165,23 @@ function genfig_sim_hi_behavior_correlations(freq=2e3, grouper=grouper_threeway)
     modes = ["singlechannel", "templatebased"]
     models = ["AuditoryNerveZBC2014_low", "InferiorColliculusSFIEBE", "InferiorColliculusSFIEBS"]
     map(zip(axs, Iterators.product(models, modes))) do (ax, (model, mode))
-        beh_subset = copy(beh)
+        # Subset sim to this mode and model
         sim_subset = @subset(sim, :mode .== mode, :model .== model)
 
-        # Order both by subject id
-        beh_subset = @orderby(beh_subset, :subj, :freq, :n_comp)
-        sim_subset = @orderby(sim_subset, :subj, :center_freq, :n_comp)
+        # Order both beh and sim by subj -> freq -> n_comp
+        beh_subset = @orderby(beh, :subj, :freq)#, :n_comp)
+        sim_subset = @orderby(sim_subset, :subj, :center_freq)#, :n_comp)
+
+        # Assert that everything is in the expected order across both datasets
         @assert all(beh_subset.subj .== sim_subset.subj)
         @assert all(beh_subset.freq .== sim_subset.center_freq)
-        @assert all(beh_subset.n_comp.== sim_subset.n_comp)
 
         # Plot data + regression lines for each HL group separately
         map(enumerate(unique(beh.hl_group)[[2, 1, 3]])) do (idx, group)
             # Subset data
-            idxs = beh_subset.hl_group .== group 
+            idxs_good = beh_subset.hl_group .== group
+#            idxs_good = (beh_subset.hl_group .== group) .& (beh_subset.include .== true)
+#            idxs_bad = (beh_subset.hl_group .== group) .& (beh_subset.include .== false)
 
             # Configure color
             color=(color_group(group), group == "Hearing loss\n(LF and HF)" ? 1.0 : 0.5)
@@ -178,28 +189,28 @@ function genfig_sim_hi_behavior_correlations(freq=2e3, grouper=grouper_threeway)
             # Plot scatter (for included "valid" data)
             scatter!(
                 ax, 
-                beh_subset[idxs .& (beh_subset.include .== true), :threshold], 
-                sim_subset[idxs .& (beh_subset.include .== true), :θ]; 
+                beh_subset[idxs_good, :threshold], 
+                sim_subset[idxs_good, :threshold]; 
                 color=color
             )
 
             # Plot scatter (for excluded "invalid" data)
-            scatter!(
-                ax, 
-                beh_subset[idxs .& (beh_subset.include .== false), :threshold], 
-                sim_subset[idxs .& (beh_subset.include .== false), :θ]; 
-                color=:grey,
-                marker=:xcross,
-            )
+            # scatter!(
+            #     ax, 
+            #     beh_subset[idxs_bad, :threshold], 
+            #     sim_subset[idxs_bad, :threshold]; 
+            #     color=:grey,
+            #     marker=:xcross,
+            # )
 
             # Fit linear model (only to included data)
             x̂, ŷ = quickfitlm(
-                beh_subset.threshold[idxs .& (beh_subset.include .== true)], 
-                sim_subset.θ[idxs .& (beh_subset.include .== true)],
+                beh_subset.threshold[idxs_good], 
+                sim_subset.threshold[idxs_good],
             )
             ρ = cor(
-                beh_subset.threshold[idxs .& (beh_subset.include .== true)], 
-                sim_subset.θ[idxs .& (beh_subset.include .== true)]
+                beh_subset.threshold[idxs_good], 
+                sim_subset.threshold[idxs_good]
             )
 
             # Plot lines and text
@@ -386,28 +397,28 @@ function genfig_sim_hi_bowls(freq=1000.0, grouper=grouper_threeway)
     # Load simulated thresolds 
     sim = @chain load_simulated_thresholds_hi() begin 
         @subset(:rove_size .== 0.001)  # as of 9/21/2023, only includes fixed-level, but this ensures it!
+        @subset(:center_freq .== freq)
     end
 
     # Load and summarize behavioral data
-    # TODO: double check on how to handle nclude here
     beh = @chain grouper(fetch_behavioral_data()) begin
         # Subset to only include unroved data at 1 and 2 kHz for available subjs
-        @subset(in.(:freq, Ref([1000.0, 2000.0])))
+        @subset(:freq .== freq)
         @subset(:rove .== "fixed level")  # see comment above re: simulations
 
         # Group by target frequency, number of components, and subject
-        groupby([:freq, :n_comp, :hl_group, :subj, :include])
+        groupby([:freq, :n_comp, :hl_group, :subj])
 
         # Compute average threshold
         @combine(:threshold = mean(:threshold))
     end
 
-    # Loop through rows of sim and add HL group and include
+    # Loop through rows of sim and add HL group to the sim dataframe
     sim[!, :hl_group] .= "none"
-    sim[!, :include] .=  false
+#    sim[!, :include] .=  false
     for idx_row in 1:nrow(sim)
         sim[idx_row, :hl_group] = unique(beh[(beh.subj .== sim[idx_row, :subj]) .& (beh.freq .== sim[idx_row, :center_freq]), :hl_group])[1]
-        sim[idx_row, :include] = unique(beh[(beh.subj .== sim[idx_row, :subj]) .& (beh.freq .== sim[idx_row, :center_freq]) .& (beh.n_comp .== sim[idx_row, :n_comp]), :include])[1]
+#        sim[idx_row, :include] = unique(beh[(beh.subj .== sim[idx_row, :subj]) .& (beh.freq .== sim[idx_row, :center_freq]) .& (beh.n_comp .== sim[idx_row, :n_comp]), :include])[1]
     end
 
     # Configure plotting parameters and set up plot
@@ -420,47 +431,91 @@ function genfig_sim_hi_bowls(freq=1000.0, grouper=grouper_threeway)
     modes = ["singlechannel", "templatebased"]
     models = ["AuditoryNerveZBC2014_low", "InferiorColliculusSFIEBE", "InferiorColliculusSFIEBS"]
     map(zip(axs, Iterators.product(models, modes))) do (ax, (model, mode))
+        # Compute average thresholds for this model and mode, separately for each HL group
+        sub_beh = @chain beh begin
+            groupby([:n_comp, :hl_group])
+            @combine(
+                :stderr = std(:threshold)/sqrt(length(:threshold)),
+                :threshold = mean(:threshold),
+            )
+        end
+
+        sub_sim = @chain sim begin
+            @subset(:model .== model, :mode .== mode)
+            groupby([:n_comp, :hl_group])
+            @combine(
+                :stderr = std(:θ)/sqrt(length(:θ)),
+                :threshold = mean(:θ),
+            )
+        end
+
+        # Adjust model thresholds to have same mean as behavioral threhsolds
+        sub_sim.threshold .= sub_sim.threshold .+ mean(sub_beh.threshold .- sub_sim.threshold)
+
+        # Make sure sub_beh and sub_sim are ordered in the same way and compute loss
+        sub_beh = @orderby(sub_beh, :n_comp, :hl_group)
+        sub_sim = @orderby(sub_sim, :n_comp, :hl_group)
+        @assert all((sub_beh.hl_group .== sub_sim.hl_group) .& (sub_beh.n_comp .== sub_sim.n_comp))
+        loss = sqrt(mean((sub_beh.threshold .- sub_sim.threshold) .^ 2))
+
+        # Loop over and plot each group separately
         for (idx, group) in enumerate(unique(beh.hl_group)[[2, 1, 3]])
-            # Subset data and compute averages
-            sub_beh = @chain beh begin
-                @subset(:hl_group .== group, :freq .== freq, :include .== true)
-                groupby([:n_comp])
-                @combine(
-                    :stderr = std(:threshold)/sqrt(length(:threshold)),
-                    :threshold = mean(:threshold),
+            # Subset data again
+            temp_beh = @subset(sub_beh, :hl_group .== group)
+            temp_sim = @subset(sub_sim, :hl_group .== group)
+
+            # Plot behavoral bowl
+            lines!(ax, (1:5) .+ (idx-1)*7, temp_beh.threshold; color=color_group(group))
+            if mean(temp_beh.threshold) > mean(temp_sim.threshold)
+                errorbars!(
+                    ax, 
+                    (1:5) .+ (idx-1)*7, 
+                    temp_beh.threshold, 
+                    zeros(nrow(temp_beh)), 
+                    1.96 .* temp_beh.stderr; 
+                    color=color_group(group)
+                )
+            else
+                errorbars!(
+                    ax, 
+                    (1:5) .+ (idx-1)*7, 
+                    temp_beh.threshold, 
+                    1.96 .* temp_beh.stderr, 
+                    zeros(nrow(temp_beh)); 
+                    color=color_group(group)
                 )
             end
+            scatter!(ax, (1:5) .+ (idx-1)*7, temp_beh.threshold; color=color_group(group))
 
-            # Subset model and compute averages
-            sub_sim = @chain sim begin
-                @subset(:hl_group .== group, :center_freq .== freq, :model .== model, :mode .== mode, :include .== true)
-                groupby([:n_comp])
-                @combine(
-                    :stderr = std(:θ)/sqrt(length(:θ)),
-                    :threshold = mean(:θ),
+            # Plot model bowl
+            lines!(ax, (1:5) .+ (idx-1)*7, temp_sim.threshold; color=:black, linestyle=:dash)
+            if mean(temp_beh.threshold) > mean(temp_sim.threshold)
+                errorbars!(
+                    ax, 
+                    (1:5) .+ (idx-1)*7, 
+                    temp_sim.threshold, 
+                    1.96 .* temp_sim.stderr, 
+                    zeros(nrow(temp_sim)); 
+                    color=:black,
+                )
+            else
+                errorbars!(
+                    ax, 
+                    (1:5) .+ (idx-1)*7, 
+                    temp_sim.threshold, 
+                    zeros(nrow(temp_sim)), 
+                    1.96 .* temp_sim.stderr; 
+                    color=:black,
                 )
             end
+            scatter!(ax, (1:5) .+ (idx-1)*7, temp_sim.threshold; color=:black, marker=:utriangle)
 
-            # Plot bowl
-            lines!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold; color=color_group(group))
-            if mean(sub_beh.threshold) > mean(sub_sim.threshold)
-                errorbars!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold, zeros(nrow(sub_beh)), 1.96 .* sub_beh.stderr; color=color_group(group))
-            else
-                errorbars!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold, 1.96 .* sub_beh.stderr, zeros(nrow(sub_beh)); color=color_group(group))
-            end
-            scatter!(ax, (1:5) .+ (idx-1)*7, sub_beh.threshold; color=color_group(group))
-
-            lines!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold; color=color_group(group), linestyle=:dash)
-            if mean(sub_beh.threshold) > mean(sub_sim.threshold)
-                errorbars!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold, 1.96 .* sub_sim.stderr, zeros(nrow(sub_sim)); color=color_group(group))
-            else
-                errorbars!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold, zeros(nrow(sub_sim)), 1.96 .* sub_sim.stderr; color=color_group(group))
-            end
-            scatter!(ax, (1:5) .+ (idx-1)*7, sub_sim.threshold; color=color_group(group), marker=:rect)
+            # Add loss text
+            text!(ax, [1.0], [12.5]; text="RMSE adj. = $(round(loss; digits=1)) dB")
 
         end
         # Adjust limits and ticks 
-        ylims!(ax, -30.0, 15.0)
+        ylims!(ax, -25.0, 20.0)
         ax.yticks = -30:10:10
 
         # Set xticks
