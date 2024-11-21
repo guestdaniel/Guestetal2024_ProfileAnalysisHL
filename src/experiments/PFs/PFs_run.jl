@@ -7,19 +7,19 @@
 end
 
 # Run main simulations
-#run(ProfileAnalysis_PFTemplateObserver())
+run(ProfileAnalysis_PFTemplateObserver())
 
 # Run reduced-resolution main simulations
 run(ProfileAnalysis_PFTemplateObserver_Reduced())
 
 # Run hearing-impaired simulations 
-#run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
+run(ProfileAnalysis_PFTemplateObserver_HearingImpaired())
 
 # Run wideband control simulations
-#run(ProfileAnalysis_PFTemplateObserver_WidebandControl())
+run(ProfileAnalysis_PFTemplateObserver_WidebandControl())
 
 # Run pure-tone control conditions
-#run(ProfileAnalysis_PFTemplateObserver_PureToneControl())
+run(ProfileAnalysis_PFTemplateObserver_PureToneControl())
 
 # Run additional models (opponent BE-BS, BE filterbank, BS filterbank)
 #run(ProfileAnalysis_PFTemplateObserver_Extended())

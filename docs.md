@@ -7,6 +7,8 @@ This repository contains the code necessary to reproduce the figures and analyse
 Guest, D. R., Cameron, D. A., Schwarz, D. M., Leong, U.-C., Richards, V. M., and Carney, L. H. (2024). "Profile Analysis in Listeners with Normal and Elevated Audiometric Thresholds: Behavioral and Modeling Results." The Journal of the Acoustical Society of America, XX(XX), XX—XX, doi:XXX.
 ```
 
+Corresponding author: Daniel Guest (daniel_guest@urmc.rochester.edu, https://github.com/guestdaniel).
+
 This repository can be found at https://osf.io/krfmq/. 
 
 # Files and paths
@@ -14,11 +16,30 @@ This repository can be found at https://osf.io/krfmq/.
 Behavioral data are stored in the `data` folder.
 Processed internal data is stored in `data/int_pro`.
 The behavioral data are available in tidy format in a `.csv` file at `data/int_pro/data_postproc.csv`.
+Each row in this file is a single "data point" consisting of the proportion of correct trials in a single block, as described in the text of the paper, and all relevant data about the configuration of the block (e.g., frequency, level roving) and the particpant (e.g., ID, audiogram thresholds).
 This file has the following columns:
+- `freq`: Frequency condition (Hz)
+- `level`: Sound level (dB SPL)
+- `subj`: Participant ID
+- `increment`: Size of the profile-analysis level increment (dB SRS)
+- `n_comp`: Number of stimulus frequency components, including target
+- `pcorr`: Proportion of correct trials
+- `rove`: Presence of level roving, either "fixed level" or "roved level"
+- `age`: Participant age (years)
+- `sex`: Participant sex (M or F)
+- `F250`–`F8000`: Participant audiometric thresholds at the corresponding frequency (dB HL)
+- `hl`: Participant audiometric threshold at target frequency as indicated in `freq` column (dB HL)
+- `pta_all`: Pure-tone average composed of all audiometric thresholds (dB HL)
+- `pta_4`: Pure-tone average composed of 0.5, 1.0, 2.0, and 3.0 kHz thresholds, reported in the manuscript as PTA[0.5–3] (dB HL)
+- `pta_upper`: Pure-tone average composed of 4.0, 6.0, and 8.0 kHz thresholds, reported in the manuscript as PTA[4–8] (dB HL)
+- `level_per_component`: The per-component level of the reference (i.e., unincremented) stimulus components (dB SPL)
+- `audio_threshold_spl`: Participant audiometric threshold converted into dB SPL assuming standard HL to SPL conversion factors (dB SPL)
+- `sl`: Estimated per-component sensation levels of the reference stimulus components (dB SL)
+- `include`: Boolean indicating whether this datum satisfies the inclusion criteria for plotting and statistical analysis as described in the paper
 
 Some processed *external* data are also available (from other studies of profile analyis, mostly Green lab work from the 80s/90s).
 These are available in tidy format in a `.csv` file at `data/ext_pro/paper_fig.csv`, where paper is in `[Green1985, Bernstein1987, Lentz1999]` and figure is in `[Fig2, Fig3, Fig4]`. 
-These files have the following columns:
+These data did not end up in the paper, but may be of use to others. 
 
 ## Path structure
 ```
@@ -45,7 +66,7 @@ The usage of each language, and how to set up an appropriate environment for usi
 
 ## MATLAB
 MATLAB was used to create the stimuli, present them to listeners, collect behavioral responses, and compile the raw data into a usable form.
-Most of these steps, and the associated code, are not handled in this repository (but you can contact the authors with questions or code requests).  
+Most of these steps and the associated code are not included in this repository. 
 Only a few MATLAB scripts are included in this repository, handling conversion of raw `.mat` data files into more user-friendly `.csv` files.
 However, these scripts rely on specific local paths and access to University of Rochester internal networks and are not intended for outside use. 
 
@@ -57,9 +78,9 @@ Please contact the corresponding author with questions or concerns.
 
 ## Julia
 Julia was used to generate figures and perform the computational modeling.
-This repository is itself a Julia package that can be used as normal once the correct custom dependencies are installed.
-There are three such requirements: `AuditorySignalUtils.jl`, `AuditoryNerveFiber.jl`, and `UtilitiesPA`.
-Please contact the corresponding author with questions or concerns.
+This repository is itself a Julia package that we recommend working from by using it as your environment (i.e., open a REPL in this folder, press `]`, and then type `activate .`).
+The code can be used once the correct custom dependencies are installed and the environment precompiles successfully. 
+There are three such requirements: `AuditorySignalUtils.jl`, `AuditoryNerveFiber.jl`, and `UtilitiesPA`, described below.
 
 ### AuditorySignalUtils.jl
 AuditorySignalUtils.jl is a small collection of auditory synthesis utilities in Julia. 
@@ -68,12 +89,15 @@ Install by switching to the package manager (`]` in the REPL) and typing:
 add https://github.com/guestdaniel/AuditorySignalUtils.jl
 ```
 
-### AuditoryNerveFiber.jl
-AuditoryNerveFiber.jl is a wrapper for the Zilany-Bruce-Carney auditory-nerve model in Julia.
+### ZilanyBruceCarney2014.jl
+ZilanyBruceCarney2014.jl is a wrapper for the Zilany-Bruce-Carney auditory-nerve model in Julia.
 Install by switching to the package manager (`]` in the REPL) and typing:
 ```
-add https://github.com/guestdaniel/AuditoryNerveFiber.jl
+add https://github.com/guestdaniel/ZilanyBruceCarney2014.jl
 ```
+
+Then, follow the instructions on the [GitHub page](https://github.com/guestdaniel/ZilanyBruceCarney2014.jl
+) to complete installation.
 
 ### UtilitiesPA
 This is a package of utility code used in the profile-analysis auditory-model simulations.
@@ -101,7 +125,7 @@ Next we have automated steps that preprocess, clean, and compile the data.
 3. Run `workflows\behavioral_data\03_compile_data.R` to compile raw block-wise data from `.xlsx` files into a single tidy format.
 
 ## Behavioral data workflow (external)
-This section describes behavioral data workflow steps that are relevant to anyone with the partially preprocessed behavioral data files available in `data\int_pro`. 
+This section describes behavioral data workflow steps that are relevant to anyone with the partially preprocessed behavioral data files available in `data\int_pro` in the file `data.csv`. 
 We extract thresholds from the raw data in Julia and then analyze those thresholds in R.
 1. Run `workflows\behavioral_data\04_postprocess_compiled_data.jl` to add additional useful columns to the behavioral data (e.g., levels in terms of sensation level)
 2. Run `workflows\behavioral_data\05_extract_thresholds.jl` to fit logistic curves to behavioral data on the individual-listener level in each condition and save to resulting thresholds and slopes to disk.
@@ -113,48 +137,29 @@ Finally, we analyze the fitted threshold data as well as subject data (e.g., aud
 3. Run `workflows\behavioral_data\09_calculate_subject_stats.jl` and `scripts\internal_data\10_calculate_block_stats.jl` interactively to gather data about subjects and data collection to report in methods section
 
 ## Modeling workflow
-### Parameter sets
-Parameters were selected by hand to provide balanced responses to modulated noise and profile-analysis stimuli (i.e., a balance between good MTFs and good sustained resposnes to profile-analysis stimuli).
-Selected parameters are available in `src\experiments\parameter_sets.jl`.
+The simulations reported in Figs 6–9 are quite extensive and require substantial computing resources to complete in a reasonable time frame (*see note at bottom of section about how to avoid!!*).
+Theoretically, the bare-minimum steps for a full reproduction are as follows:
+1. Run the script `experiments/PFs/PFs_run.jl`. You will first need to modify the file on line 1 to point to your `ProfileAnalysis` directory.
+2. Run the Julia script `workflows/simulations/compile.jl`.
+3. Use the script `workflows/genfigs.jl` to generate the figures of interest (see below for more detail).
 
-### Generating and examining simulations
-Simulations are organized around concrete subtypes of `ProfileAnalysisExperiment`.
-There are several available, each of which handle a subset of the total necessary simulations for the paper:
-- `ProfileAnalysis_PFTemplateObserver`: Majority of NH simulations in paper
-- `ProfileAnalysis_PFTemplateObserver_HearingImpaired`: Majority of HI simulations in paper
-- `ProfileAnalysis_PFTemplateObserver_WidebandControl`: Control for testing off-CF effects
-- `ProfileAnalysis_PFTemplateObserver_PureToneControl`: Control for testing suppression
-
-The following commands can be used to work with these types, assuming that the associated `Utilities` package is also loaded.
+However, in practice, this code may take several days or more to run on a single core. 
+You can run the first script, `PFs_run.jl` in parallel by starting Julia with multiple workers:
 ```
-setup(exp)        # fetch all simulation objects, but don't run them 
-status(exp)       # check which simulations are cached on file and which are not
-run(exp)          # run all simulations
+julia -p 8 PFs_run.jl
 ```
+Even then, however, it may take several days to complete.
+We run this script using a SLURM setup on Rochester's compute cluster.
+Refer to `experiments/PFs/PFs_run.sh` to see how we set up the SLURM environment and run the `.jl` script.
+The Julia code will automatically cache all of the simulation results to disk as it runs; these results can then be moved back to your local machine by `rsync` or similar tools, and then you can proceed to step 2 entirely on the local machine.
 
-If one sets `sims = setup(exp)`, the following operations are useful:
-```
-id.(sims)         # fetch all simulation IDs
-cachepath.(sims)  # fetch all simulation cache paths, assuming standard Config
-```
+Note that there are some BlueHive-specific paths in the code; if you want to deploy this code on a different Linux machine, search this repository for `Linux` to see where paths may need to be modified for your use case.
+In general, these steps have not been tested on other platforms/setups, and so this code is not intended as a turn-key reproduction of the results of the paper — please contact the authors if you are serious about reproducing our results with this code and assistance can be provided!
 
-Note that we have only discussed the "template-based" simulations! This is because we only
-worry about generating and running the template-based simulations --- the other
-"template-free" simulations are simply re-analysis of the data generated by the
-template-based simulations, implemented via the disk-memoized caching system provided by
-`Utilities`. 
-
-### Running simulations
-Simulations can be run as above using `run(exp)`, but practically we rarely do this directly.
-Instead, we first set up an environment on CIRC's BlueHive and then run the simulations in a batch mode.
-This is achieved by submitting `PFs_run.sh` using `sbatch`. 
-This script uses ~30 worker processes for long stretches of time to run `PFs_run.jl`, a script that sets up each worker process' environemnt and simulates each of the above experiments.
-The results of this process can be downloaded to local machies using the Julia function `synchronize_cache`.
-These steps have not been tested on other platforms/setups, and so this code is not intended for use as a turn-key reproduction of the results of the paper — please contact the authors if you are serious about reproducing our results with this code and assistance can be provided!
+*Note that this workflow can be avoided by relying on the preprocessed and compiled model-threshold estimates stored in `sim_pro/model_thresholds*.jld2`.*
+*The figure generation code (see below) already does this, so you should be able to reproduce the figures even without recomputing all the model responses.*
 
 ## Figure workflow
 Once simulations are run, figures can be generated by running `workflows/genfigs.jl`.
 Some figure code generates multiple subfigures that are combined post hoc into single images in Inkscape.
 The `.svg` files involved in this process are not included in this repository but are available upon request.
-Figures 1–5 can be generated relatively quickly and do not rely on the large-scale simulations.
-Later figures can only be generated after first running the large-scale simulations as described above.

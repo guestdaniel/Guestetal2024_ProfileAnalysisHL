@@ -17,7 +17,7 @@ subject would be assigned to at that frequency.
 function genfig_audiograms_and_cohc()
     # Load audiograms, grab only needed rows, and transform into Audiogram objects
     subjs = unique(fetch_behavioral_data().subj)
-    audiograms = DataFrame(CSV.File("C:\\Users\\dguest2\\cl_data\\pahi\\raw\\thresholds_2022-07-18.csv"))
+    audiograms = DataFrame(CSV.File(projectdir("data", "int_pro", "audiometry.csv")))
     audiograms[audiograms.Subject .== "S98", :Subject] .= "S098"
     audiograms = @subset(audiograms, in.(:Subject, Ref(subjs)))
     audiograms = map(subjs) do subj
