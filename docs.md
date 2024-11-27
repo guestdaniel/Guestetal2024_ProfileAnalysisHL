@@ -96,7 +96,7 @@ A copy is included in this repository in a folder of the same name.
 To install, follow the install instructions from Step 2 in the AuditoryNerveFiber.jl folder's `README.md`.
 Then, install the package in your Julia environment by switching to the package manager (`]` in the REPL) and typing:
 ```
-add AuditoryNerveFiber.jl
+add ./AuditoryNerveFiber.jl
 ```
 This assumes that your REPL's current active directory is the top-level folder of this repository.
 Adjust the path accordingly if this is not the case.
@@ -109,7 +109,7 @@ This is a package of utility code used in the profile-analysis auditory-model si
 A copy is included in this repository in a folder of the same name.
 Install in your Julia environment by switching to the package manager (`]` in the REPL) and typing:
 ```
-add UtilitiesPA
+add ./UtilitiesPA
 ```
 This assumes that your REPL's current active directory is the top-level folder of this repository.
 Adjust the path accordingly if this is not the case.
