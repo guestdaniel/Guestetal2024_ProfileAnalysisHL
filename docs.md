@@ -84,20 +84,25 @@ There are three such requirements: `AuditorySignalUtils.jl`, `AuditoryNerveFiber
 
 ### AuditorySignalUtils.jl
 AuditorySignalUtils.jl is a small collection of auditory synthesis utilities in Julia. 
+It is registered in the Julia package registry.
 Install by switching to the package manager (`]` in the REPL) and typing:
 ```
-add https://github.com/guestdaniel/AuditorySignalUtils.jl
+add AuditorySignalUtils
 ```
 
-### ZilanyBruceCarney2014.jl
-ZilanyBruceCarney2014.jl is a wrapper for the Zilany-Bruce-Carney auditory-nerve model in Julia.
-Install by switching to the package manager (`]` in the REPL) and typing:
+### AuditoryNerveFiber.jl
+AuditoryNerveFiber.jl is a wrapper for the Zilany-Bruce-Carney auditory-nerve model in Julia.
+A copy is included in this repository in a folder of the same name.
+To install, follow the install instructions from Step 2 in the AuditoryNerveFiber.jl folder's `README.md`.
+Then, install the package in your Julia environment by switching to the package manager (`]` in the REPL) and typing:
 ```
-add https://github.com/guestdaniel/ZilanyBruceCarney2014.jl
+add AuditoryNerveFiber.jl
 ```
+This assumes that your REPL's current active directory is the top-level folder of this repository.
+Adjust the path accordingly if this is not the case.
 
-Then, follow the instructions on the [GitHub page](https://github.com/guestdaniel/ZilanyBruceCarney2014.jl
-) to complete installation.
+Note that AuditoryNerveFiber.jl is an frozen copy of an older version of the actively maintained [ZilanyBruceCarney2014.jl](https://github.com/ZilanyBruceCarney2014.jl). 
+This older version is relied on to avoid the need to replace all of the instances of the old name with the new one, but is otherwise nearly identicaly code (as of late 2024).
 
 ### UtilitiesPA
 This is a package of utility code used in the profile-analysis auditory-model simulations.
