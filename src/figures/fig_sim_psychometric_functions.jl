@@ -207,22 +207,22 @@ function genfig_zeta_c1_psychometric_functions(increments=vcat(-999.9, -45.0:2.5
     [ax.xticklabelrotation = π/2 for ax in axs]
 
     # Grab models
-    models = Utilities.setup(exp, 1000.0)
+    models = setup(exp, 1000.0)
 
     # Do each plot, on-CF coding
     for (ax, model) in zip(axs, models)
         # Simulate psychometric function
         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-        pf = Utilities.setup(exp, model, increments, 1000.0, 21; observer=obs)
+        pf = setup(exp, model, increments, 1000.0, 21; observer=obs)
         out = @memo Default() simulate(pf)
 
         # Summarize data
         μ = map(mean, out)
         σ = map(x -> sqrt((mean(x) * (1 - mean(x)))/length(x)), out)
-        mod = Utilities.fit(pf, increments[2:end], out[2:end])
+        mod = fit(pf, increments[2:end], out[2:end])
 
         # Plot
-        Utilities.viz!(exp, ax, increments, μ, σ, mod)
+        viz!(exp, ax, increments, μ, σ, mod)
     end
 
     # Neaten up
@@ -248,22 +248,22 @@ function genfig_zeta_c2_psychometric_functions(increments=vcat(-999.9, -45.0:2.5
     [ax.xticklabelrotation = π/2 for ax in axs]
 
     # Grab models
-    models = Utilities.setup(exp, 1000.0)
+    models = setup(exp, 1000.0)
 
     # Do each plot, on-CF coding
     for (ax, model) in zip(axs, models)
         # Simulate psychometric function
         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-        pf = Utilities.setup(exp, model, increments, 1000.0, 21; observer=obs, preprocessor=pre_emphasize_profile)
+        pf = setup(exp, model, increments, 1000.0, 21; observer=obs, preprocessor=pre_emphasize_profile)
         out = @memo Default() simulate(pf)
 
         # Summarize data
         μ = map(mean, out)
         σ = map(x -> sqrt((mean(x) * (1 - mean(x)))/length(x)), out)
-        mod = Utilities.fit(pf, increments[2:end], out[2:end])
+        mod = fit(pf, increments[2:end], out[2:end])
 
         # Plot
-        Utilities.viz!(exp, ax, increments, μ, σ, mod)
+        viz!(exp, ax, increments, μ, σ, mod)
     end
 
     # Neaten up
@@ -289,12 +289,12 @@ function genfig_zeta_c3_psychometric_functions(increments=vcat(-999.9, -45.0:2.5
     [ax.xticklabelrotation = π/2 for ax in axs]
 
     # Grab models
-    models = Utilities.setup(exp, 1000.0)
+    models = setup(exp, 1000.0)
 
     # Do each plot, on-CF coding
     for (ax, model) in zip(axs, models)
         # Simulate psychometric function
-        pf = Utilities.setup(
+        pf = setup(
             exp, 
             model, 
             increments, 
@@ -306,10 +306,10 @@ function genfig_zeta_c3_psychometric_functions(increments=vcat(-999.9, -45.0:2.5
         # Summarize data
         μ = map(mean, out)
         σ = map(x -> sqrt((mean(x) * (1 - mean(x)))/length(x)), out)
-        mod = Utilities.fit(pf, increments[2:end], out[2:end])
+        mod = fit(pf, increments[2:end], out[2:end])
 
         # Plot
-        Utilities.viz!(exp, ax, increments, μ, σ, mod)
+        viz!(exp, ax, increments, μ, σ, mod)
     end
 
     # Neaten up

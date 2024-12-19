@@ -36,7 +36,7 @@ simulated parameter values:
 
 Returns a vector of simulation objects that can be evaluted with `simulate`.
 """
-function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
+function setup(experiment::ProfileAnalysis_PFTemplateObserver)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
     n_comps = [5, 13, 21, 29, 37]
@@ -48,11 +48,11 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver)
     # Get simulations
     sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
         # Get possible models
-        models = Utilities.setup(experiment, center_freq)
+        models = setup(experiment, center_freq)
 
         # Loop over models and assemble PFs
         map(models) do model
-            Utilities.setup(experiment, model, increments, center_freq, n_comp, rove_size)
+            setup(experiment, model, increments, center_freq, n_comp, rove_size)
         end
     end
 
@@ -73,7 +73,7 @@ simulated parameter values:
 
 Returns a vector of simulation objects that can be evaluted with `simulate`.
 """
-function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Reduced)
+function setup(experiment::ProfileAnalysis_PFTemplateObserver_Reduced)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [1000.0, 2000.0]
     n_comps = [5, 13, 21, 29, 37]
@@ -85,11 +85,11 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Reduced)
     # Get simulations
     sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
         # Get possible models
-        models = Utilities.setup(experiment, center_freq; n_cf=n_cf_reduced)
+        models = setup(experiment, center_freq; n_cf=n_cf_reduced)
 
         # Loop over models and assemble PFs
         map(models) do model
-            Utilities.setup(
+            setup(
                 ProfileAnalysis_PFTemplateObserver(), 
                 model, 
                 increments, 
@@ -120,7 +120,7 @@ simulated parameter values:
 
 Returns a vector of simulation objects that can be evaluted with `simulate`.
 """
-function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Extended)
+function setup(experiment::ProfileAnalysis_PFTemplateObserver_Extended)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
     n_comps = [5, 13, 21, 29, 37]
@@ -136,7 +136,7 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Extended
 
         # Loop over models and assemble PFs
         map(models) do model
-            Utilities.setup(ProfileAnalysis_PFTemplateObserver(), model, increments, center_freq, n_comp, rove_size)
+            setup(ProfileAnalysis_PFTemplateObserver(), model, increments, center_freq, n_comp, rove_size)
         end
     end
 
@@ -161,7 +161,7 @@ two-tone suppression and similar phenomena).
 
 Returns a vector of simulation objects that can be evaluted with `simulate`.
 """
-function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_PureToneControl)
+function setup(experiment::ProfileAnalysis_PFTemplateObserver_PureToneControl)
     # Choose superexperiment (should be handled with subtyping but oh well)
     supexp = ProfileAnalysis_PFTemplateObserver()
 
@@ -176,11 +176,11 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_PureTone
     # Get simulations
     sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
         # Get possible models
-        models = Utilities.setup(experiment, center_freq)
+        models = setup(experiment, center_freq)
 
         # Loop over models and assemble PFs
         map(models) do model
-            Utilities.setup(supexp, model, increments, center_freq, n_comp, rove_size)
+            setup(supexp, model, increments, center_freq, n_comp, rove_size)
         end
     end
 
@@ -205,7 +205,7 @@ values of:
 
 Returns a vector of simulation objects that can be evaluted with `simulate`.
 """
-function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_WidebandControl)
+function setup(experiment::ProfileAnalysis_PFTemplateObserver_WidebandControl)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [500.0, 1000.0, 2000.0, 4000.0]
     n_comps = [5]
@@ -217,11 +217,11 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_Wideband
     # Get simulations
     sims = map(Iterators.product(center_freqs, n_comps, rove_sizes)) do (center_freq, n_comp, rove_size)
         # Get possible models
-        models = Utilities.setup(experiment, center_freq, [2^-2.5, 2^2.5])
+        models = setup(experiment, center_freq, [2^-2.5, 2^2.5])
 
         # Loop over models and assemble PFs
         map(models) do model
-            Utilities.setup(experiment, model, increments, center_freq, n_comp, rove_size)
+            setup(experiment, model, increments, center_freq, n_comp, rove_size)
         end
     end
 
@@ -246,7 +246,7 @@ make each faster to simulate (lower numbers of reps, smaller increment range, fe
 
 Returns a vector of simulation objects that can be evaluted with `simulate`.
 """
-function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_HearingImpaired)
+function setup(experiment::ProfileAnalysis_PFTemplateObserver_HearingImpaired)
     # Choose frequencies, component counts, and rove sizes to loop over
     center_freqs = [1000.0, 2000.0]
     n_comps = [5, 13, 21, 29, 37]
@@ -263,7 +263,7 @@ function Utilities.setup(experiment::ProfileAnalysis_PFTemplateObserver_HearingI
 
         # Loop over models and assemble PFs
         map(models) do model
-            Utilities.setup(
+            setup(
                 ProfileAnalysis_PFTemplateObserver(), 
                 model, 
                 increments, 
@@ -287,7 +287,7 @@ Set up a psychometric function simulation object for specified model/params.
 Creates AvgPatterns to simulate reference and target responses and bundles them into a PF
 object for simulation. This variant specifically uses a template-based observer.
 """
-function Utilities.setup(
+function setup(
     ::ProfileAnalysis_PFTemplateObserver, 
     model::Model, 
     increments=[-20.0, -10.0, 0.0], 
@@ -298,7 +298,7 @@ function Utilities.setup(
     n_rep_template=n_rep_template,
 )
     # Get template
-    template = Utilities.setup(
+    template = setup(
         ProfileAnalysis_Templates(), 
         model, 
         center_freq, 
@@ -354,14 +354,14 @@ Set up a psychometric function simulation object for specified model/params.
 Creates AvgPatterns to simulate reference and target responses and bundles them into a PF
 object for simulation. This variant specifically uses a template-free observer.
 """
-function Utilities.setup(
+function setup(
     ::ProfileAnalysis_PFObserver, 
     model::Model, 
     increments=[-20.0, -10.0, 0.0], 
     center_freq::Float64=1000.0, 
     n_comp::Int64=21,
     rove_size::Float64=0.001;
-    preprocessor=Utilities.pre_nothing,
+    preprocessor=pre_nothing,
     observer=obs_maxrate,
     n_rep_trial=n_rep_trial,
 )
@@ -426,7 +426,7 @@ function pre_emphasize_profile(x::Tuple)
 end
 
 # Declare function useful for plotting PFs
-function Utilities.viz!(::ProfileAnalysis_PF, ax, x, μ, σ, mod)
+function viz!(::ProfileAnalysis_PF, ax, x, μ, σ, mod)
     # Extract threshold from curve fit
     threshold = invlogistic(0.71, mod.param; L=0.5, offset=0.5)
 
@@ -457,12 +457,12 @@ end
 function getpffunc(mode, model, exp)
     if mode == "singlechannel"
         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-        pffunc = (args...; kwargs...) -> Utilities.setup(exp, args...; observer=obs, kwargs...)
+        pffunc = (args...; kwargs...) -> setup(exp, args...; observer=obs, kwargs...)
     elseif mode == "profilechannel"
         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-        pffunc = (args...; kwargs...) -> Utilities.setup(exp, args...; observer=obs, preprocessor=pre_emphasize_profile, kwargs...)
+        pffunc = (args...; kwargs...) -> setup(exp, args...; observer=obs, preprocessor=pre_emphasize_profile, kwargs...)
     elseif mode == "templatebased"
-        pffunc = (args...; kwargs...) -> Utilities.setup(exp, args...; kwargs...)
+        pffunc = (args...; kwargs...) -> setup(exp, args...; kwargs...)
     end
     return pffunc
 end

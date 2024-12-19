@@ -1,6 +1,5 @@
 using CairoMakie
 using CSV
-using Utilities
 using AuditorySignalUtils
 
 # Load audiograms, grab only needed rows, and transform into Audiogram objects

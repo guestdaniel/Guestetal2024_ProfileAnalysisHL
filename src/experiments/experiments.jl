@@ -6,7 +6,7 @@
 export ProfileAnalysisExperiment, setup_nohsr, setup_extended
 
 # Declare experiment types
-abstract type ProfileAnalysisExperiment <: Utilities.Experiment end
+abstract type ProfileAnalysisExperiment <: Experiment end
 
 # Declare a handful of constants that we will use throughout these experiments and analyses
 # These provide a basic set of rules of thumb to encourage cosistency across simulations
@@ -29,7 +29,7 @@ Return vector of models with specified parameter settings
 Return vector of Model objects with specified CF and audiogram parameter settings. Used
 throughout the simulation code to standardize the process of setting up models.
 """
-function Utilities.setup(
+function setup(
     ::ProfileAnalysisExperiment, 
     center_freq::Float64,
     cf_range=cf_range,

@@ -202,7 +202,7 @@ function fetch_pattern(;
 )
     # Choose experiment
     experiment = ProfileAnalysis_PFTemplateObserver()
-    models = Utilities.setup(experiment, center_freq)
+    models = setup(experiment, center_freq)
     model = models[model_id]
 
     # Make stimuli

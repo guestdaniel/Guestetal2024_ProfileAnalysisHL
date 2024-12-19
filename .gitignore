@@ -29,5 +29,4 @@ Manifest.toml
 data
 plots
 .Rmd
-UtilitiesPA
-AuditoryNerveFiber.jl
+*.zip

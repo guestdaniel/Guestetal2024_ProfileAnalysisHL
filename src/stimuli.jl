@@ -129,7 +129,7 @@ used in the behavioral PAHI experiments.
 - `dur_ramp`: ramp duration (s)
 - `pedestal_level`: level of un-incremented components (dB SPL)
 """
-@with_kw struct ProfileAnalysisTone <: Utilities.Stimulus
+@with_kw struct ProfileAnalysisTone <: Stimulus
     # Stimulus interface
     dur::Float64=0.20
     fs::Float64=100e3
@@ -144,9 +144,9 @@ used in the behavioral PAHI experiments.
     dur_ramp::Float64=0.01
 end
 
-Utilities.standardfields(::Type{ProfileAnalysisTone}) = [:center_freq, :pedestal_level, :increment, :n_comp]
+standardfields(::Type{ProfileAnalysisTone}) = [:center_freq, :pedestal_level, :increment, :n_comp]
 
-function Utilities.synthesize(x::ProfileAnalysisTone)
+function synthesize(x::ProfileAnalysisTone)
     profile_analysis_tone(
         x.freqs,
         x.target_comp;

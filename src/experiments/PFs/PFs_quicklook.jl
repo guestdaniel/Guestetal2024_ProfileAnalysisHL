@@ -1,5 +1,4 @@
 using ProfileAnalysis
-using Utilities
 using CairoMakie
 using DataFrames
 using DataFramesMeta

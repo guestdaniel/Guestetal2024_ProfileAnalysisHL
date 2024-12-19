@@ -8,7 +8,7 @@ export ProfileAnalysis_AvgPatterns, setup_pair
 struct ProfileAnalysis_AvgPatterns <: ProfileAnalysisExperiment end
 
 # Declare setup function to return AvgPattern for combination of model, increment, center_freq, and n_comp
-function Utilities.setup(
+function setup(
     ::ProfileAnalysis_AvgPatterns, 
     model::Model, 
     increment::Float64, 

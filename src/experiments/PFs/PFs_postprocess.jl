@@ -65,7 +65,7 @@ function postprocess_pfs(
                     pf = getpffunc(mode, model, exp)(model, increments, center_freq, n_comp, rove_size)
                     if isfile(pf.patterns[1][1]) & isfile(pf.patterns[end][end])
                         out = @memo Default() simulate(pf)
-                        Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
+                        fit(pf, increments[2:end], out[2:end]).param[1]
                     else
                         NaN
                     end
@@ -133,7 +133,7 @@ function postprocess_pfs_reduced(
                     # Simulate psychometric function
                     if mode == "singlechannel"
                         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-                        pf = Utilities.setup(
+                        pf = setup(
                             exp, 
                             model, 
                             increments, 
@@ -144,7 +144,7 @@ function postprocess_pfs_reduced(
                             n_rep_trial=n_rep_trial_reduced,
                         )
                     elseif mode == "templatebased"
-                        pf = Utilities.setup(
+                        pf = setup(
                             exp, 
                             model, 
                             increments, 
@@ -159,7 +159,7 @@ function postprocess_pfs_reduced(
                     # Check if files exist, and if so proceed
                     if isfile(pf.patterns[1][1]) & isfile(pf.patterns[end][end])
                         out = @memo Default() simulate(pf)
-                        Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
+                        fit(pf, increments[2:end], out[2:end]).param[1]
                     else
                         NaN
                     end
@@ -231,7 +231,7 @@ function postprocess_pfs_hi(
                     # Simulate psychometric function
                     if mode == "singlechannel"
                         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-                        pf = Utilities.setup(
+                        pf = setup(
                             exp, 
                             model, 
                             increments, 
@@ -243,7 +243,7 @@ function postprocess_pfs_hi(
                         )
                     elseif mode == "profilechannel"
                         obs = typeof(model) == InferiorColliculusSFIEBE ? obs_dec_rate_at_tf : obs_inc_rate_at_tf
-                        pf = Utilities.setup(
+                        pf = setup(
                             exp, 
                             model, 
                             increments, 
@@ -255,7 +255,7 @@ function postprocess_pfs_hi(
                             n_rep_trial=n_rep_trial_reduced,
                         )
                     elseif mode == "templatebased"
-                        pf = Utilities.setup(
+                        pf = setup(
                             exp, 
                             model, 
                             increments, 
@@ -270,7 +270,7 @@ function postprocess_pfs_hi(
                     if fileexists
                         println("Necessary simulation files exist, fitting psychometric function!")
                         out = @memo Default() simulate(pf)
-                        Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
+                        fit(pf, increments[2:end], out[2:end]).param[1]
                     else
                         println("Necessary simulation files DO NOT exist, skipping fitting psychometric function!")
                         NaN
@@ -350,7 +350,7 @@ function postprocess_pfs_puretone(
                     pf = getpffunc(mode, model, exp)(model, increments, center_freq, n_comp, rove_size)
                     if isfile(pf.patterns[1][1]) & isfile(pf.patterns[end][end])
                         out = @memo Default() simulate(pf)
-                        Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
+                        fit(pf, increments[2:end], out[2:end]).param[1]
                     else
                         NaN
                     end
@@ -424,7 +424,7 @@ function postprocess_pfs_extended(
                     pf = getpffunc(mode, model, exp)(model, increments, center_freq, n_comp, rove_size)
                     if isfile(pf.patterns[1][1]) & isfile(pf.patterns[end][end])
                         out = @memo Default() simulate(pf)
-                        Utilities.fit(pf, increments[2:end], out[2:end]).param[1]
+                        fit(pf, increments[2:end], out[2:end]).param[1]
                     else
                         NaN
                     end
@@ -716,7 +716,7 @@ function density_pair_stack!(fig, ax, data, labels; xlabel="Firing rate (sp/s)",
     fig
 end
 
-function plot_histograms_versus_increment(pf::P) where {P <: Utilities.PF}
+function plot_histograms_versus_increment(pf::P) where {P <: PF}
     # Load data from all increments
     data = map(pf.patterns) do pattern
         # Load reference and target patterns
@@ -746,7 +746,7 @@ function lpc_to_ol(x, n)
     10.0 * log10(n * 10.0^(x/10.0))
 end
 
-function plot_histograms_versus_increment_sound_level_control(pf::P) where {P <: Utilities.PF}
+function plot_histograms_versus_increment_sound_level_control(pf::P) where {P <: PF}
     # Load data from all increments
     @info "Loading simulated rates..."
     rates = map(pf.patterns) do pattern

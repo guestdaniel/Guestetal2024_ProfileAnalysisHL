@@ -1,6 +1,5 @@
 module ProfileAnalysis
 
-using AuditoryNerveFiber
 using AuditorySignalUtils
 using CairoMakie
 using Chain
@@ -9,20 +8,60 @@ using CSV
 using ColorSchemes
 using DataFrames
 using DataFramesMeta
+using Dates
 using Distributed
 using Distributions
-using HypothesisTests
 using DrWatson
+using DSP
+using FFTW
+using GLM
+using HypothesisTests
+using MAT
 using LsqFit
+using OnlineStats
 using Parameters
+using SHA
+using Suppressor
 using Statistics
 using Random
-using Utilities
 using ProgressMeter
 using Printf
 using Match
 using Optim
-using GLM
+using ZilanyBruceCarney2014
+
+# Utilities code
+# This code is all salvaged from the now-long-dead Utilities package I wrote...
+# To avoid making the user install everything themselves, we just incorporate it and its
+# dependencies into this fine package.
+# Core code
+include(joinpath("core", "utils.jl"))
+include(joinpath("core", "components.jl"))
+include(joinpath("core", "audiograms.jl"))
+
+# Stimulus code
+include(joinpath("stimuli", "stimuli.jl"))
+include(joinpath("stimuli", "tones.jl"))
+include(joinpath("stimuli", "noises.jl"))
+include(joinpath("stimuli", "compound.jl"))
+
+# Modeling code
+include(joinpath("models", "models.jl"))
+include(joinpath("models", "zbc2014.jl"))
+include(joinpath("models", "nc2004.jl"))
+
+# Simulations and Experiments
+include(joinpath("simulations", "configs.jl"))
+include(joinpath("simulations", "simulations.jl"))
+include(joinpath("simulations", "experiments.jl"))
+include(joinpath("simulations", "mtf.jl"))
+include(joinpath("simulations", "rlf.jl"))
+include(joinpath("simulations", "tuning_curves.jl"))
+include(joinpath("simulations", "patterns.jl"))
+include(joinpath("simulations", "psychometric_functions.jl"))
+
+# # Set up standards for types
+include(joinpath("standards", "standards.jl"))
 
 # General code
 include("groupers.jl")           # functions for grouping rows of dfs based on audiometry
