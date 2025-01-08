@@ -4,7 +4,7 @@
 This repository contains the code necessary to reproduce the figures and analyses described in:
 
 ```
-Guest, D. R., Cameron, D. A., Schwarz, D. M., Leong, U.-C., Richards, V. M., and Carney, L. H. (2024). "Profile Analysis in Listeners with Normal and Elevated Audiometric Thresholds: Behavioral and Modeling Results." The Journal of the Acoustical Society of America, XX(XX), XX—XX, doi:XXX.
+Guest, D. R., Cameron, D. A., Schwarz, D. M., Leong, U., Richards, V. M., & Carney, L. H. (2024). Profile analysis in listeners with normal and elevated audiometric thresholds: Behavioral and modeling results. The Journal of the Acoustical Society of America, 156(6), 4303-4325. https://doi.org/10.1121/10.0034635
 ```
 
 Corresponding author: Daniel Guest (daniel_guest@urmc.rochester.edu, https://github.com/guestdaniel).
